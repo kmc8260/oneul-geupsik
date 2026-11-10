@@ -1,0 +1,842 @@
+/* =====================================================================
+   style.css — 오늘의 급식 · 모든 화면이 함께 쓰는 디자인 파일 (Figma 디자인 색상 기준)
+   - 기본은 모바일, 1024px 이상에서 데스크톱 레이아웃으로 바뀝니다. (@media (min-width: 1024px))
+   - 순서: ① 색 변수 · 기본 ② 로그인/회원가입 ③ 팝업 ④ 알레르기 선택 ⑤ 데스크톱(인증 화면)
+           ⑥ 앱 공통 부품 ⑦ 하단 탭 ⑧ 메인 ⑨ 메뉴 상세 ⑩ 평가 ⑪ 내 평가 ⑫ 마이페이지
+           ⑬ 회원정보 수정 ⑭ 공지 ⑮ 학교 검색 팝업 ⑯ 데스크톱(앱 화면)
+   - 읽는 법:  .클래스이름 { 속성: 값; }  →  HTML에서 class="클래스이름" 인 요소에 적용
+              .a.b = a와 b 클래스를 둘 다 가진 요소 / .a .b = a 안에 있는 b
+              :hover = 마우스 올렸을 때 / :focus = 입력 중 / :disabled = 누를 수 없을 때
+   ===================================================================== */
+:root {  /* 색상·크기 변수 모음 (var(--이름)으로 어디서나 사용, 한 곳만 바꾸면 전체가 바뀜) */
+  --bg: #f4f7fb;  /* 화면 배경 (아주 연한 회청색) */
+  --card: #ffffff;  /* 카드 배경 (흰색) */
+  --ink: #1b2433;  /* 기본 글자색 (거의 검정) */
+  --sub: #6b7686;  /* 보조 글자색 (회색) */
+  --placeholder: #a0a8b5;  /* 입력칸 안내 글자색 */
+  --line: #e3e8f0;  /* 테두리 선 색 */
+  --blue: #3d7bf5;  /* 대표 색 (파랑) */
+  --blue-dark: #2f69de;  /* 마우스 올렸을 때 진한 파랑 */
+  --blue-soft: #eaf1fe;  /* 연한 파랑 바탕 */
+  --red: #e5484d;  /* 경고 색 (알레르기·오류) */
+  --red-soft: #fdecec;  /* 연한 빨강 바탕 */
+  --green: #1f9d55;  /* 성공 색 */
+  --radius: 12px;  /* 버튼·입력칸 모서리 둥글기 */
+}
+
+* { box-sizing: border-box; }  /* 모든 요소: 너비에 테두리·안쪽 여백까지 포함해서 계산 (크기 계산이 쉬워짐) */
+
+html, body { margin: 0; }  /* 브라우저 기본 바깥 여백 없애기 */
+
+body {  /* 기본 글꼴·글자색·배경색 */
+  font-family: 'Noto Sans KR', system-ui, -apple-system, sans-serif;  /* 글꼴 (앞에서부터 있는 것 사용) */
+  color: var(--ink);  /* 글자색 */
+  background: var(--bg);  /* 배경색 */
+  line-height: 1.4;  /* 줄 간격 */
+  -webkit-font-smoothing: antialiased;  /* 맥/아이폰에서 글자를 부드럽게 */
+}
+
+a { color: var(--blue); font-weight: 700; text-decoration: none; }  /* 링크: 파란 굵은 글씨, 밑줄 없음 */
+a:hover { text-decoration: underline; }  /* 마우스를 올리면 밑줄 */
+
+button { font: inherit; cursor: pointer; }  /* 버튼도 주변 글꼴을 그대로 쓰고, 손가락 커서 */
+
+/* ---------- 로고 ---------- */
+.logo {  /* 로고 동그라미(파란 사각형) */
+  display: inline-grid;
+  place-items: center;  /* 가운데 정렬 */
+  width: 64px;  /* 너비 */
+  height: 64px;  /* 높이 */
+  border-radius: 19px;  /* 모서리 둥글게 */
+  background: var(--blue);  /* 배경색 */
+  color: #fff;  /* 글자색 */
+}
+.logo svg { width: 32px; height: 32px; }  /* 로고 안 아이콘 크기 */
+
+/* ---------- 인증 화면 레이아웃 ---------- */
+.auth { min-height: 100vh; min-height: 100dvh; display: flex; }  /* 로그인/회원가입 전체 틀 (화면 높이 꽉 채우기, dvh = 모바일 주소창 제외 높이) */
+
+.brand-panel { display: none; } /* 모바일에서는 숨김 */
+
+.form-panel {  /* 입력 폼이 들어가는 영역 */
+  flex: 1;  /* 남는 공간을 나눠 갖는 비율 */
+  display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+  justify-content: center;  /* 가로(주축) 정렬 */
+}
+
+.form-wrap {  /* 폼 묶음 (가운데 정렬, 최대 너비 제한) */
+  width: 100%;  /* 너비 */
+  max-width: 420px;  /* 최대 너비 */
+  padding: 24px 20px 32px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+  flex-direction: column;  /* 세로로 쌓기 */
+}
+
+/* 로그인 화면 모바일 상단 브랜드 */
+.mobile-brand {  /* 모바일 로그인 화면 위쪽 로고+앱 이름 */
+  text-align: center;  /* 글자 정렬 */
+  padding: 72px 0 32px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+}
+.mobile-brand h1 { margin: 12px 0 4px; font-size: 26px; }  /* 앱 이름 */
+.mobile-brand p { margin: 0; color: var(--sub); font-size: 14px; }  /* 한 줄 소개 */
+
+.form-title { display: none; margin: 0; font-size: 28px; }  /* 데스크톱용 큰 제목 (모바일에서는 숨김) */
+.form-desc { display: none; margin: 4px 0 8px; color: var(--sub); font-size: 14px; }  /* 데스크톱용 설명 (모바일에서는 숨김) */
+
+/* 회원가입 모바일 상단바 */
+.topbar {  /* 모바일 상단바 (뒤로 가기 + 제목) */
+  display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+  align-items: center;  /* 세로(교차축) 정렬 */
+  gap: 4px;  /* 자식 요소 사이 간격 */
+  margin: -4px 0 12px;  /* 바깥 여백 */
+  font-size: 17px;  /* 글자 크기 */
+  font-weight: 500;  /* 글자 굵기 (400 보통 · 500 중간 · 700 굵게) */
+  color: var(--ink);  /* 글자색 */
+}
+.topbar a { display: inline-flex; color: var(--ink); }  /* 뒤로 가기 아이콘 링크 */
+.topbar svg { width: 24px; height: 24px; }  /* 뒤로 가기 아이콘 크기 */
+.signup-heading { margin: 0 0 4px; font-size: 20px; }  /* 회원가입 모바일 안내 제목 */
+
+/* ---------- 폼 ---------- */
+form { display: flex; flex-direction: column; gap: 14px; }  /* 폼 안의 칸들을 세로로 14px 간격으로 쌓기 */
+
+.field { display: flex; flex-direction: column; gap: 6px; }  /* 입력칸 하나 묶음 (라벨 + 입력 + 메시지) */
+.field label { font-size: 13px; font-weight: 500; }  /* 입력칸 이름 글씨 */
+
+.input {  /* 글자 입력칸 공통 모양 (둥근 테두리 상자) */
+  width: 100%;  /* 너비 */
+  padding: 13px 14px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  border: 1px solid var(--line);  /* 테두리 */
+  border-radius: var(--radius);  /* 모서리 둥글게 */
+  background: #fff;  /* 배경색 */
+  font: inherit;  /* 글꼴 묶음 */
+  font-size: 15px;  /* 글자 크기 */
+  color: var(--ink);  /* 글자색 */
+  outline: none;  /* 바깥 테두리 선 */
+  transition: border-color 0.15s, box-shadow 0.15s;  /* 값이 바뀔 때 부드럽게 */
+}
+.input::placeholder { color: var(--placeholder); }  /* 입력칸 안 회색 안내 글씨 */
+.input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(61, 123, 245, 0.15); }  /* 입력 중인 칸: 파란 테두리 + 연한 파란 빛 */
+.input[aria-invalid='true'] { border-color: var(--red); }  /* 오류가 있는 칸: 빨간 테두리 (api.js setFieldMsg가 aria-invalid를 붙임) */
+.input[aria-invalid='true']:focus { box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.15); }  /* 오류 칸에 입력 중: 연한 빨간 빛 */
+
+.field-msg { margin: 0; min-height: 0; font-size: 12px; }  /* 입력칸 아래 작은 안내/오류 문구 */
+.field-msg:empty { display: none; }  /* 문구가 없으면 자리도 차지하지 않게 숨김 */
+.field-msg.error { color: var(--red); }  /* 오류 = 빨강 */
+.field-msg.ok { color: var(--green); }  /* 통과 = 초록 (예: 사용 가능한 아이디) */
+
+.id-row { display: flex; gap: 8px; }  /* 아이디 입력칸 + 중복 확인 버튼을 가로로 */
+.id-row .input { flex: 1; min-width: 0; }  /* 입력칸이 남는 너비를 다 차지 */
+
+.btn {  /* 버튼 공통 모양 */
+  display: inline-flex;  /* 글자처럼 한 줄에 놓이는 flex */
+  justify-content: center;  /* 가로(주축) 정렬 */
+  align-items: center;  /* 세로(교차축) 정렬 */
+  gap: 8px;  /* 자식 요소 사이 간격 */
+  padding: 15px 20px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  border-radius: var(--radius);  /* 모서리 둥글게 */
+  border: 1px solid transparent;  /* 테두리 */
+  font-size: 16px;  /* 글자 크기 */
+  font-weight: 700;  /* 글자 굵기 (400 보통 · 500 중간 · 700 굵게) */
+  transition: background 0.15s, opacity 0.15s;  /* 값이 바뀔 때 부드럽게 */
+}
+.btn:disabled { opacity: 0.6; cursor: default; }  /* 누를 수 없는 버튼은 흐리게 */
+.btn:focus-visible { outline: 3px solid rgba(61, 123, 245, 0.35); outline-offset: 2px; }  /* 키보드(Tab)로 선택했을 때 파란 테두리 */
+.btn-primary { background: var(--blue); color: #fff; }  /* 주요 버튼: 파란 바탕 흰 글씨 */
+.btn-primary:hover:not(:disabled) { background: var(--blue-dark); }  /* 마우스 올리면 조금 진한 파랑 */
+.btn-secondary { background: #fff; color: var(--ink); border-color: var(--line); }  /* 보조 버튼: 흰 바탕 + 회색 테두리 */
+.btn-secondary:hover:not(:disabled) { background: var(--bg); }  /* 마우스 올리면 연회색 바탕 */
+.btn-soft {  /* 연한 파란 버튼 (중복 확인, 변경 등) */
+  padding: 0 16px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  background: var(--blue-soft);  /* 배경색 */
+  color: var(--blue);  /* 글자색 */
+  font-size: 14px;  /* 글자 크기 */
+  white-space: nowrap;  /* 줄바꿈 방식 */
+}
+.btn-text { background: none; border: none; color: var(--sub); font-weight: 500; font-size: 15px; padding: 10px; }  /* 글자만 있는 버튼 (나중에 할게요) */
+.btn-block { width: 100%; }  /* 가로 꽉 찬 버튼 */
+
+.form-error {  /* 폼 전체 오류 상자 (빨간 연한 바탕) */
+  margin: 0;  /* 바깥 여백 */
+  padding: 11px 14px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  border-radius: var(--radius);  /* 모서리 둥글게 */
+  background: var(--red-soft);  /* 배경색 */
+  color: var(--red);  /* 글자색 */
+  font-size: 13px;  /* 글자 크기 */
+  font-weight: 500;  /* 글자 굵기 (400 보통 · 500 중간 · 700 굵게) */
+}
+.form-error:empty { display: none; }  /* 오류가 없으면 숨김 */
+
+.note {  /* 회색 안내 상자 */
+  margin: 0;  /* 바깥 여백 */
+  padding: 10px 12px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  border-radius: 10px;  /* 모서리 둥글게 */
+  background: var(--blue-soft);  /* 배경색 */
+  color: var(--blue);  /* 글자색 */
+  font-size: 12px;  /* 글자 크기 */
+}
+
+.switch { margin: 16px 0 0; text-align: center; color: var(--sub); font-size: 14px; }  /* "아직 회원이 아니신가요?" 링크 줄 */
+
+/* 회원가입: 모바일에서는 가입하기 버튼을 화면 맨 아래에 고정 */
+.signup .form-wrap { min-height: 100vh; min-height: 100dvh; }  /* 회원가입 모바일: 화면 높이만큼 늘려서 */
+.signup form { flex: 1; }  /* 폼이 남은 공간을 채워 버튼이 맨 아래로 감 */
+.signup .switch { display: none; } /* 모바일은 상단 뒤로가기로 로그인에 돌아감 */
+.submit-bar {  /* 모바일 가입하기 버튼 영역 (화면 아래에 붙음) */
+  position: sticky;  /* 스크롤하다 끝에 닿으면 붙어 있음 */
+  bottom: 0;  /* 아래에서 떨어진 거리 */
+  margin: auto -20px -32px;  /* 바깥 여백 */
+  padding: 12px 20px 28px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  background: #fff;  /* 배경색 */
+  border-top: 1px solid var(--line);  /* 위 테두리 */
+}
+
+/* ---------- 팝업 (가입 완료 안내) ---------- */
+.welcome {  /* 가입 완료 화면 본문 (가운데 정렬) */
+  min-height: 100vh;  /* 최소 높이 */
+  min-height: 100dvh;  /* 최소 높이 (dvh: 모바일 주소창을 뺀 실제 화면 높이, 지원 안 하는 브라우저는 윗줄 100vh 사용) */
+  display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+  flex-direction: column;  /* 세로로 쌓기 */
+  align-items: center;  /* 세로(교차축) 정렬 */
+  padding: 160px 20px 0;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  text-align: center;  /* 글자 정렬 */
+}
+.check-badge {  /* 초록 동그라미 체크 표시 */
+  display: grid;  /* 격자 배치 (grid) */
+  place-items: center;  /* 가운데 정렬 */
+  width: 72px;  /* 너비 */
+  height: 72px;  /* 높이 */
+  border-radius: 50%;  /* 모서리 둥글게 */
+  background: var(--blue);  /* 배경색 */
+  color: #fff;  /* 글자색 */
+}
+.check-badge svg { width: 36px; height: 36px; }  /* 체크 아이콘 크기 */
+.welcome h1 { margin: 16px 0 6px; font-size: 22px; }  /* 환영 문구 */
+.welcome p { margin: 0; color: var(--sub); font-size: 14px; }  /* 설명 문구 */
+
+.overlay {  /* 팝업 뒤 반투명 검은 배경 (화면 전체를 덮음) */
+  position: fixed;  /* 화면에 고정 (스크롤해도 그 자리) */
+  inset: 0;  /* 위·오른쪽·아래·왼쪽을 한 번에 (0 = 화면 꽉) */
+  background: rgba(15, 23, 38, 0.45);  /* 반투명 검정 배경 (마지막 숫자 = 투명도) */
+  display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+  align-items: flex-end;  /* 세로(교차축) 정렬 */
+  justify-content: center;  /* 가로(주축) 정렬 */
+  animation: fade 0.2s ease-out;  /* 나타날 때 애니메이션 */
+}
+.overlay[hidden] { display: none; }  /* hidden 속성이 있으면 숨김 */
+
+.sheet {  /* 팝업 창 본체 (모바일: 아래에서 올라오는 바텀시트) */
+  width: 100%;  /* 너비 */
+  background: #fff;  /* 배경색 */
+  border-radius: 24px 24px 0 0;  /* 모서리 둥글게 */
+  padding: 12px 24px 32px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+  flex-direction: column;  /* 세로로 쌓기 */
+  align-items: center;  /* 세로(교차축) 정렬 */
+  gap: 14px;  /* 자식 요소 사이 간격 */
+  text-align: center;  /* 글자 정렬 */
+  animation: slide-up 0.25s ease-out;  /* 나타날 때 애니메이션 */
+}
+.sheet .handle { width: 40px; height: 4px; border-radius: 2px; background: var(--line); }  /* 바텀시트 위 손잡이 막대 */
+.alert-badge {  /* 빨간 동그라미 느낌표 */
+  display: grid;  /* 격자 배치 (grid) */
+  place-items: center;  /* 가운데 정렬 */
+  width: 56px;  /* 너비 */
+  height: 56px;  /* 높이 */
+  border-radius: 50%;  /* 모서리 둥글게 */
+  background: var(--red-soft);  /* 배경색 */
+  color: var(--red);  /* 글자색 */
+  font-size: 26px;  /* 글자 크기 */
+  font-weight: 700;  /* 글자 굵기 (400 보통 · 500 중간 · 700 굵게) */
+}
+.sheet h2 { margin: 0; font-size: 21px; line-height: 1.4; }  /* 팝업 제목 */
+.sheet p { margin: 0; color: var(--sub); font-size: 14px; line-height: 1.5; }  /* 팝업 설명 */
+.sheet-actions { width: 100%; display: flex; flex-direction: column; gap: 4px; }  /* 팝업 버튼들 (모바일: 세로로 쌓기) */
+
+@keyframes fade { from { opacity: 0; } }  /* 애니메이션: 투명 → 보임 (배경) */
+@keyframes slide-up { from { transform: translateY(40px); opacity: 0; } }  /* 애니메이션: 아래에서 위로 올라옴 (바텀시트) */
+
+/* ---------- 임시 화면 (홈, 알레르기 선택) ---------- */
+.placeholder {  /* (예전 임시 화면용, 지금은 거의 안 씀) */
+  max-width: 560px;  /* 최대 너비 */
+  margin: 0 auto;  /* 바깥 여백 */
+  padding: 48px 20px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+  flex-direction: column;  /* 세로로 쌓기 */
+  gap: 16px;  /* 자식 요소 사이 간격 */
+}
+.placeholder h1 { margin: 0; font-size: 24px; }  /* 임시 화면 제목 */
+.placeholder .card {  /* 임시 화면 카드 */
+  padding: 20px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  border: 1px solid var(--line);  /* 테두리 */
+  border-radius: 14px;  /* 모서리 둥글게 */
+  background: #fff;  /* 배경색 */
+  color: var(--sub);  /* 글자색 */
+  font-size: 14px;  /* 글자 크기 */
+}
+
+/* ---------- 알레르기 선택 ---------- */
+.select-page { min-height: 100vh; min-height: 100dvh; display: flex; justify-content: center; }  /* 알레르기 선택 화면 전체 틀 */
+.select-wrap {  /* 알레르기 선택 내용 묶음 */
+  width: 100%;  /* 너비 */
+  max-width: 560px;  /* 최대 너비 */
+  padding: 24px 20px 0;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+  flex-direction: column;  /* 세로로 쌓기 */
+  gap: 14px;  /* 자식 요소 사이 간격 */
+}
+.select-page .topbar { margin: -4px 0 0; }  /* 상단바 위치 살짝 조정 */
+.select-title { margin: 0; font-size: 20px; }  /* "어떤 알레르기가 있나요?" 제목 */
+.select-desc { margin: -6px 0 0; color: var(--sub); font-size: 13px; }  /* 설명 문구 */
+.chip-card { display: flex; flex-direction: column; gap: 14px; }  /* 칩 목록 카드 */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }  /* 칩들을 가로로 놓고 넘치면 다음 줄로 (flex-wrap) */
+.chip {  /* 알레르기 칩 버튼 (둥근 알약 모양) */
+  padding: 8px 14px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  border-radius: 18px;  /* 모서리 둥글게 */
+  border: 1px solid var(--line);  /* 테두리 */
+  background: #fff;  /* 배경색 */
+  color: var(--ink);  /* 글자색 */
+  font-size: 14px;  /* 글자 크기 */
+  transition: background 0.12s, border-color 0.12s, color 0.12s;  /* 값이 바뀔 때 부드럽게 */
+}
+.chip:hover { border-color: #c9d3e1; }  /* 마우스 올리면 테두리 진하게 */
+.chip.on { background: var(--blue-soft); border-color: var(--blue); color: var(--blue); font-weight: 700; }  /* 고른 칩: 파란 테두리 + 파란 글씨 */
+.chip:focus-visible { outline: 3px solid rgba(61, 123, 245, 0.35); outline-offset: 2px; }  /* 키보드로 선택했을 때 테두리 */
+.selected-summary { margin: 0; color: var(--blue); font-size: 13px; font-weight: 500; }  /* "선택됨: 우유, 밀" 문구 (파랑) */
+.selected-summary.none { color: var(--sub); font-weight: 400; }  /* 아무것도 안 골랐을 때 (회색) */
+.loading { margin: 0; color: var(--sub); font-size: 14px; }  /* "불러오는 중…" 문구 */
+
+/* 모바일: 저장 버튼을 화면 맨 아래에 고정, 취소는 상단 뒤로가기로 대신 */
+.select-actions {  /* 저장 버튼 영역 (모바일: 화면 아래 고정) */
+  position: sticky;  /* 스크롤하다 끝에 닿으면 붙어 있음 */
+  bottom: 0;  /* 아래에서 떨어진 거리 */
+  margin: auto -20px 0;  /* 바깥 여백 */
+  padding: 12px 20px 28px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  background: #fff;  /* 배경색 */
+  border-top: 1px solid var(--line);  /* 위 테두리 */
+  display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+}
+.select-actions .btn-primary { flex: 1; }  /* 저장 버튼이 가로 꽉 */
+.select-actions .btn-secondary { display: none; }  /* 모바일에서는 취소 버튼 숨김 */
+
+.toast {  /* 잠깐 뜨는 알림 (화면 아래 가운데 검은 말풍선) */
+  position: fixed;  /* 화면에 고정 (스크롤해도 그 자리) */
+  left: 50%;  /* 왼쪽에서 떨어진 거리 */
+  bottom: 110px;  /* 아래에서 떨어진 거리 */
+  transform: translateX(-50%);  /* 이동·크기 변형 */
+  padding: 12px 18px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  border-radius: 12px;  /* 모서리 둥글게 */
+  background: var(--ink);  /* 배경색 */
+  color: #fff;  /* 글자색 */
+  font-size: 14px;  /* 글자 크기 */
+  font-weight: 500;  /* 글자 굵기 (400 보통 · 500 중간 · 700 굵게) */
+  white-space: nowrap;  /* 줄바꿈 방식 */
+  animation: fade 0.2s ease-out;  /* 나타날 때 애니메이션 */
+}
+.toast[hidden] { display: none; }  /* 숨겨진 상태 */
+
+/* =================== 데스크톱 (1024px 이상) =================== */
+@media (min-width: 1024px) {  /* ↓ 여기 안의 규칙은 화면 너비 1024px 이상(노트북·PC)에서만 적용 */
+  .brand-panel {  /* 데스크톱: 왼쪽 파란 소개 패널 보이기 (남는 너비 전부 차지) */
+    flex: 1;  /* 남는 공간을 나눠 갖는 비율 */
+    display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+    flex-direction: column;  /* 세로로 쌓기 */
+    justify-content: center;  /* 가로(주축) 정렬 */
+    gap: 20px;  /* 자식 요소 사이 간격 */
+    padding: 0 96px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+    background: var(--blue);  /* 배경색 */
+    color: #fff;  /* 글자색 */
+  }
+  .brand-panel .logo { width: 56px; height: 56px; border-radius: 16px; background: #fff; color: var(--blue); }  /* 패널 로고: 흰 바탕 파란 아이콘 */
+  .brand-panel .logo svg { width: 28px; height: 28px; }  /* 로고 아이콘 크기 */
+  .brand-panel h2 { margin: 0; font-size: 36px; line-height: 1.4; }  /* 패널 큰 제목 */
+  .brand-panel p { margin: 0; color: #dce7ff; font-size: 16px; }  /* 패널 설명 (연한 하늘색 글씨) */
+  .brand-panel ul { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }  /* 기능 소개 목록 (점 없애기) */
+  .brand-panel li { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 500; }  /* 목록 한 줄: 체크 + 글 */
+  .brand-panel li span {  /* 체크 동그라미 */
+    display: grid; place-items: center;
+    width: 24px; height: 24px; border-radius: 50%; background: #5b90f7;
+  }
+  .brand-panel li svg { width: 14px; height: 14px; }  /* 체크 아이콘 크기 */
+
+  .form-panel { flex: 0 0 600px; align-items: center; background: #fff; }  /* 데스크톱: 오른쪽 흰 폼 영역 600px 고정 */
+  .form-wrap { max-width: 380px; padding: 40px 0; }  /* 데스크톱: 폼 너비 380px */
+
+  .mobile-brand, .topbar, .signup-heading { display: none; }  /* 데스크톱에서는 모바일용 요소 숨김 */
+  .form-title { display: block; }  /* 데스크톱: 큰 제목 보이기 */
+  .form-desc { display: block; }  /* 데스크톱: 설명 보이기 */
+
+  .submit-bar { position: static; margin: 0; padding: 0; border: none; background: none; }  /* 데스크톱: 버튼을 화면 아래 고정하지 않고 폼 안에 그대로 */
+  .signup .form-wrap { min-height: 0; }  /* 높이 늘리기 해제 */
+  .signup form { flex: none; }  /* 늘리기 해제 */
+  .signup .switch { display: block; }  /* 로그인 링크 다시 보이기 */
+
+  .welcome { padding-top: 96px; }  /* 데스크톱: 위쪽 여백 크게 */
+  .welcome h1 { font-size: 30px; }  /* 제목 크게 */
+  .welcome p { font-size: 16px; }  /* 설명 크게 */
+  .overlay { align-items: center; }  /* 데스크톱: 팝업을 화면 가운데로 */
+  .sheet { width: 440px; border-radius: 20px; padding: 32px 32px 28px; animation-name: pop; }  /* 데스크톱: 가운데 둥근 팝업 440px + pop 애니메이션 */
+  .sheet .handle { display: none; }  /* 데스크톱: 손잡이 막대 숨김 */
+  .sheet h2 { font-size: 22px; }  /* 팝업 제목 크기 */
+  .sheet-actions { flex-direction: row-reverse; gap: 10px; padding-top: 8px; }  /* 데스크톱: 버튼을 가로로 (오른쪽이 주요 버튼) */
+  .sheet-actions .btn { flex: 1; }  /* 버튼 같은 너비 */
+  .sheet-actions .btn-text { border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); font-weight: 700; font-size: 16px; padding: 15px 20px; }  /* "나중에" 버튼에 테두리 */
+
+  @keyframes pop { from { transform: scale(0.96); opacity: 0; } }  /* 애니메이션: 살짝 작았다가 원래 크기로 (데스크톱 팝업) */
+
+  .select-page { align-items: flex-start; }  /* 데스크톱: 위쪽부터 배치 */
+  .select-wrap { max-width: 880px; padding: 48px 40px; gap: 16px; }  /* 데스크톱: 내용 최대 880px */
+  .select-page .topbar-title { font-size: 14px; color: var(--sub); }  /* 데스크톱 상단바 제목은 작은 회색 */
+  .select-page .topbar a { color: var(--sub); }  /* 뒤로 가기도 회색 */
+  .select-title { font-size: 28px; }  /* 제목 크게 */
+  .select-desc { font-size: 15px; margin-top: -8px; }  /* 설명 크게 */
+  .chip-card { padding: 28px; border: 1px solid var(--line); border-radius: 14px; background: #fff; gap: 20px; }  /* 데스크톱: 칩 목록을 흰 카드 안에 */
+  .chips { gap: 10px; }  /* 칩 간격 넓게 */
+  .select-actions { position: static; margin: 8px 0 0; padding: 0; border: none; background: none; justify-content: flex-end; gap: 10px; }  /* 데스크톱: 버튼을 화면 아래 고정하지 않고 오른쪽 정렬 */
+  .select-actions .btn-secondary { display: inline-flex; width: 140px; }  /* 데스크톱: 취소 버튼 보이기 */
+  .select-actions .btn-primary { flex: none; width: 200px; }  /* 저장 버튼 200px */
+  .toast { bottom: 48px; }  /* 데스크톱 알림 위치 */
+}  /* 데스크톱 규칙 끝 */
+
+@media (prefers-reduced-motion: reduce) {  /* ↓ "동작 줄이기"를 켠 사용자는 애니메이션 끄기 (접근성) */
+  * { animation: none !important; transition: none !important; }  /* 모든 요소: 너비에 테두리·안쪽 여백까지 포함해서 계산 (크기 계산이 쉬워짐) */
+}  /* 데스크톱 규칙 끝 */
+
+/* =====================================================================
+   앱 화면 (메인 · 메뉴 상세 · 평가 · 마이페이지 …)
+   ===================================================================== */
+.muted { color: var(--sub); }  /* 회색 보조 글씨 */
+.small { font-size: 13px; }  /* 작은 글씨 13px */
+.tiny { font-size: 12px; margin: 0; }  /* 아주 작은 글씨 12px */
+.pad { padding: 24px 0; }  /* 위아래 여백 */
+.grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }  /* 남는 너비를 다 차지하는 세로 묶음 */
+.big { font-size: 17px; }  /* 조금 큰 글씨 */
+.stack { display: flex; flex-direction: column; gap: 16px; }  /* 세로로 16px 간격 쌓기 */
+
+.btn-danger { background: var(--red); color: #fff; }  /* 위험 버튼: 빨간 바탕 (삭제·탈퇴 확인) */
+.btn-danger:hover:not(:disabled) { background: #cf3b40; }  /* 마우스 올리면 진한 빨강 */
+.btn-danger-outline { background: #fff; color: var(--red); border-color: #f3c4c6; }  /* 빨간 테두리 버튼 (탈퇴하기) */
+.btn-danger-outline:hover:not(:disabled) { background: var(--red-soft); }  /* 마우스 올리면 연한 빨간 바탕 */
+.small-btn { padding: 9px 14px; font-size: 13px; }  /* 작은 버튼 */
+
+.link-btn { background: none; border: none; padding: 4px 2px; color: var(--blue); font-weight: 700; font-size: 14px; }  /* 링크처럼 생긴 버튼 (수정, 삭제, 오늘) */
+.link-btn.danger { color: var(--red); }  /* 빨간 링크 버튼 (삭제) */
+.icon-btn {  /* 아이콘만 있는 동그란 버튼 (닫기 X, 주 이동 화살표) */
+  display: inline-grid; place-items: center;
+  width: 40px; height: 40px; border-radius: 10px;
+  background: none; border: none; color: var(--ink);
+}
+.icon-btn:hover { background: var(--bg); }  /* 마우스 올리면 연회색 바탕 */
+.icon-btn:focus-visible, .link-btn:focus-visible, .nav-item:focus-visible { outline: 3px solid rgba(61, 123, 245, 0.35); outline-offset: 2px; }  /* 키보드 선택 표시 */
+
+.card {  /* 흰색 카드 상자 공통 */
+  background: #fff;  /* 배경색 */
+  border: 1px solid var(--line);  /* 테두리 */
+  border-radius: 14px;  /* 모서리 둥글게 */
+  padding: 16px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+}
+.card-title { display: block; font-size: 16px; margin-bottom: 4px; }  /* 카드 제목 */
+.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 16px; }  /* 카드 머리줄 (제목 ↔ 보조 글씨 양쪽 끝) */
+.section-title { margin: 0 0 10px; font-size: 16px; }  /* 구역 제목 (영양 정보, 한 줄 평 …) */
+.section-title small { margin-left: 6px; font-size: 12px; font-weight: 400; color: var(--sub); }  /* 제목 옆 작은 회색 글씨 */
+
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }  /* 태그들을 가로로, 넘치면 줄바꿈 */
+.tag {  /* 알레르기 태그 (회색 작은 알약) */
+  display: inline-block;
+  padding: 3px 8px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  border-radius: 6px;  /* 모서리 둥글게 */
+  background: #eef1f5;  /* 배경색 */
+  color: var(--sub);  /* 글자색 */
+  font-size: 12px;  /* 글자 크기 */
+  font-weight: 500;  /* 글자 굵기 (400 보통 · 500 중간 · 700 굵게) */
+}
+.tag.warn { background: var(--red-soft); color: var(--red); font-weight: 700; }  /* 내 알레르기 태그 = 빨간 강조 */
+
+.stars { display: inline-flex; gap: 2px; vertical-align: middle; }  /* 별 5개 묶음 */
+.star { fill: #d9dee6; flex: none; }  /* 회색 별 (fill = SVG 채우기 색) */
+.star.on { fill: #f5b301; }  /* 노란 별 */
+
+.avatar {  /* 이름 첫 글자 동그라미 (프로필) */
+  display: inline-grid; place-items: center; flex: none;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--blue-soft); color: var(--blue);
+  font-size: 18px; font-weight: 700;
+}
+.avatar.sm { width: 32px; height: 32px; font-size: 14px; }  /* 작은 동그라미 (사이드바) */
+
+.empty {  /* 내용이 없을 때 안내 화면 (가운데 정렬) */
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 40px 16px; text-align: center;
+}
+.empty h2 { margin: 4px 0 0; font-size: 18px; }  /* 안내 제목 */
+.empty p { margin: 0; font-size: 14px; }  /* 안내 문구 */
+.empty .btn { margin-top: 8px; }  /* 안내 버튼 위 여백 */
+.empty-icon {  /* 안내 위 동그란 아이콘 */
+  display: grid; place-items: center;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--blue-soft); color: var(--blue);
+}
+
+/* ---------- 공통 틀: 모바일 하단 탭 ---------- */
+body.app { padding-bottom: 76px; }  /* 모바일: 하단 탭에 내용이 가려지지 않게 아래 여백 */
+.sidebar { display: none; }  /* 모바일에서는 사이드바 숨김 */
+.bottom-nav {  /* 모바일 하단 탭 메뉴 (화면 아래 고정) */
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: flex;  /* 가로/세로로 나란히 배치 (flex) */
+  padding: 8px 0 calc(10px + env(safe-area-inset-bottom));  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+  background: #fff;  /* 배경색 */
+  border-top: 1px solid var(--line);  /* 위 테두리 */
+}
+.bottom-nav .nav-item {  /* 탭 하나: 아이콘 위 + 글자 아래 */
+  flex: 1;  /* 남는 공간을 나눠 갖는 비율 */
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  color: #9aa3b2; font-size: 12px; font-weight: 500; text-decoration: none;
+}
+.bottom-nav .nav-item.active { color: var(--blue); font-weight: 700; }  /* 지금 화면 탭 = 파랑 */
+.bottom-nav .nav-item:hover { text-decoration: none; }  /* 밑줄 없애기 */
+
+.app-main { padding: 0 20px 24px; max-width: 640px; margin: 0 auto; }  /* 앱 화면 본문 (모바일: 최대 640px 가운데) */
+.page-head {  /* 화면 제목 줄 */
+  display: flex; justify-content: space-between; align-items: flex-end; gap: 12px;
+  padding: 20px 0 14px;  /* 안쪽 여백 (위 오른쪽 아래 왼쪽) */
+}
+.page-head h1 { margin: 0; font-size: 22px; }  /* 화면 제목 */
+.page-head p { margin: 2px 0 0; font-size: 13px; }  /* 제목 아래 보조 줄 */
+.page-top { padding: 16px 0 8px; }  /* 하위 화면 위쪽 (뒤로 가기) */
+.back-link { display: inline-flex; align-items: center; gap: 4px; color: var(--ink); font-size: 17px; font-weight: 500; }  /* "‹ 메뉴 상세" 뒤로 가기 링크 */
+.back-link:hover { text-decoration: none; }  /* 밑줄 없애기 */
+
+/* ---------- 메인: 주간 · 탭 · 카드 ---------- */
+.week-nav { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }  /* 주간 날짜 줄 (‹ 월 화 수 목 금 ›) */
+.week-arrow { width: 32px; height: 56px; color: var(--sub); flex: none; }  /* 지난주/다음주 화살표 버튼 */
+.week-days { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }  /* 날짜 5개를 같은 너비 5칸으로 (grid) */
+.day {  /* 날짜 버튼 하나 (요일 + 날짜) */
+  position: relative;  /* 자식의 absolute 기준점이 됨 */
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  padding: 8px 0; border-radius: 12px;
+  background: #fff; border: 1px solid var(--line); color: var(--ink);
+}
+.day span { font-size: 12px; font-weight: 500; color: var(--sub); }  /* 요일 글씨 */
+.day strong { font-size: 17px; }  /* 날짜 숫자 */
+.day.on { background: var(--blue); border-color: var(--blue); color: #fff; }  /* 고른 날짜 = 파란 바탕 */
+.day.on span { color: #dce7ff; }  /* 고른 날짜의 요일 글씨는 연한 하늘색 */
+.day.empty-day:not(.on) strong { color: #b6bec9; }  /* 급식 없는 날은 숫자를 흐리게 */
+.today-dot { position: absolute; top: 6px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--red); }  /* 오늘 표시 작은 점 (오른쪽 위) */
+.day.on .today-dot { background: #fff; }  /* 파란 바탕 위에서는 흰 점 */
+
+.meal-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: #e6ebf2; margin-bottom: 12px; }  /* 조식/중식/석식 탭 묶음 (회색 바탕) */
+.tab { flex: 1; padding: 8px 0; border: none; border-radius: 9px; background: none; color: var(--sub); font-size: 14px; font-weight: 500; }  /* 탭 버튼 하나 */
+.tab.on { background: #fff; color: var(--ink); font-weight: 700; box-shadow: 0 1px 2px rgba(27, 36, 51, 0.06); }  /* 고른 탭 = 흰 바탕 + 그림자 */
+.tab:disabled { color: #b6bec9; cursor: default; }  /* 그날 없는 끼니 탭은 흐리게 */
+
+.alert-banner {  /* 내 알레르기 경고 띠 (빨간 연한 바탕) */
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 14px; margin-bottom: 12px; border-radius: 12px;
+  background: var(--red-soft); color: var(--red); font-size: 13px; font-weight: 500;
+}
+.alert-dot {  /* 경고 띠 왼쪽 빨간 느낌표 동그라미 */
+  display: grid; place-items: center; flex: none;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--red); color: #fff; font-size: 12px; font-weight: 700;
+}
+.info-box {  /* 파란 안내 상자 (알레르기 등록하기) */
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  padding: 11px 14px; margin-bottom: 12px; border-radius: 12px;
+  background: var(--blue-soft); color: var(--blue); font-size: 13px; font-weight: 500;
+}
+a.info-box:hover { text-decoration: none; background: #dde8fd; }  /* 링크 상자에 마우스 올리면 조금 진하게 */
+.info-box.warn-soft { background: #fff6e0; color: #8a5a00; }  /* 노란 주의 상자 (나이스 연결 실패 안내) */
+
+.menu-grid { display: flex; flex-direction: column; gap: 8px; }  /* 메뉴 카드 목록 (모바일: 세로 한 줄씩) */
+.menu-card {  /* 메뉴 카드 하나 (메뉴 이름 + 별점 + 알레르기 태그) */
+  display: flex; flex-direction: column; gap: 8px;
+  width: 100%; padding: 14px 16px; text-align: left;
+  background: #fff; border: 1px solid var(--line); border-radius: 14px; color: var(--ink);
+  transition: border-color 0.12s, box-shadow 0.12s;  /* 값이 바뀔 때 부드럽게 */
+}
+.menu-card:hover { border-color: #c9d3e1; }  /* 마우스 올리면 테두리 진하게 */
+.menu-card.warn { border: 1.5px solid var(--red); }  /* 내 알레르기가 들어간 메뉴 = 빨간 테두리 */
+.menu-card.picked { box-shadow: 0 0 0 3px rgba(61, 123, 245, 0.25); border-color: var(--blue); }  /* 데스크톱에서 고른 메뉴 = 파란 테두리 + 빛 */
+.menu-card.warn.picked { box-shadow: 0 0 0 3px rgba(229, 72, 77, 0.2); border-color: var(--red); }  /* 알레르기 메뉴를 골랐을 때 = 빨간 빛 */
+.menu-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }  /* 카드 위 줄: 메뉴 이름 ↔ 별점 */
+.menu-card-head strong { font-size: 16px; }  /* 메뉴 이름 */
+.mini-rating { display: inline-flex; align-items: center; gap: 3px; flex: none; font-size: 13px; font-weight: 700; }  /* 카드 오른쪽 작은 별점 */
+.mini-rating small { color: var(--sub); font-weight: 400; }  /* (평가 수) 회색 */
+
+.meal-sum {  /* 한 끼 영양 합계 줄 */
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 12px;
+  padding: 14px 2px 4px; font-size: 13px;
+}
+
+.popular { margin-top: 20px; }  /* 이번 주 인기 메뉴 구역 */
+.popular-row { display: flex; flex-direction: column; gap: 8px; }  /* 인기 메뉴 카드들 (모바일: 세로) */
+.popular-card {  /* 인기 메뉴 카드 하나 */
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; text-align: left;
+  background: #fff; border: 1px solid var(--line); border-radius: 14px; color: var(--ink);
+}
+.popular-card:hover { border-color: #c9d3e1; }  /* 마우스 올리면 테두리 진하게 */
+.rank {  /* 순위 숫자 동그라미 */
+  display: grid; place-items: center; flex: none;
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--blue-soft); color: var(--blue); font-weight: 700;
+}
+.rank.first { background: var(--blue); color: #fff; }  /* 1등은 파란 동그라미 */
+.popular-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }  /* 메뉴 이름 + 별점·날짜 */
+.popular-text span { display: inline-flex; align-items: center; gap: 3px; color: var(--sub); font-size: 12px; }  /* 별점·날짜 작은 회색 글씨 */
+
+.detail-panel { display: none; }  /* 모바일에서는 오른쪽 상세 패널 숨김 */
+
+/* ---------- 메뉴 상세 ---------- */
+.detail { display: flex; flex-direction: column; gap: 20px; }  /* 메뉴 상세 전체 (구역들을 세로로 20px 간격) */
+.detail-head p { margin: 0; font-size: 13px; }  /* 날짜·끼니 글씨 */
+.detail-head h1 { margin: 2px 0 4px; font-size: 24px; }  /* 메뉴 이름 (크게) */
+.rating-line { display: flex; align-items: center; gap: 6px; font-size: 15px; }  /* ★ 4.3 12명 평가 줄 */
+.rating-line span { color: var(--sub); font-size: 13px; }  /* 평가 수 회색 */
+.alert-box {  /* 빨간 알레르기 경고 상자 (메뉴 상세) */
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 12px 14px; border-radius: 12px;
+  background: var(--red-soft); color: var(--red); font-size: 13px;
+}
+.alert-box strong { font-size: 14px; }  /* 경고 제목 */
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }  /* 영양 정보 4칸 (같은 너비 grid) */
+.stat {  /* 숫자 칸 하나 (숫자 위 + 이름 아래) */
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 12px 4px; border-radius: 12px;
+  background: #fff; border: 1px solid var(--line); text-align: center;
+}
+.stat strong { font-size: 17px; }  /* 숫자 */
+.stat span { font-size: 12px; color: var(--sub); }  /* 항목 이름 */
+.detail-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }  /* 흰 상자 (알레르기 목록 등) */
+.allergy-rows { display: flex; flex-direction: column; gap: 10px; }  /* 알레르기 줄들 세로로 */
+.allergy-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--sub); }  /* 알레르기 한 줄: 태그 ↔ 급식표 번호 */
+.review-list { display: flex; flex-direction: column; gap: 8px; }  /* 한 줄 평 카드 목록 */
+.review-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }  /* 한 줄 평 카드 하나 */
+.review-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: var(--sub); }  /* 카드 위 줄: 별점 ↔ 작성자·날짜 */
+.review-card p { margin: 6px 0 0; font-size: 14px; word-break: break-all; }  /* 평가 글 (긴 단어도 줄바꿈) */
+.mine-badge { color: var(--blue); font-weight: 700; }  /* "내 평가" 파란 표시 */
+.detail p.muted { margin: 0; font-size: 14px; }  /* 안내 회색 문구 */
+
+/* 모바일 상세 화면: 평가 버튼을 하단 탭 바로 위에 고정 */
+.sub-page .detail-action {  /* 모바일: 평가 버튼을 하단 탭 바로 위에 붙임 (sticky) */
+  position: sticky; bottom: 68px;
+  margin: 0 -20px; padding: 12px 20px;
+  background: #fff; border-top: 1px solid var(--line);
+}
+
+/* ---------- 평가 작성 ---------- */
+.review-form { display: flex; flex-direction: column; gap: 18px; padding-bottom: 8px; }  /* 평가 폼 전체 */
+.menu-summary { display: flex; flex-direction: column; gap: 2px; }  /* 평가할 메뉴 요약 상자 */
+.menu-summary strong { font-size: 16px; }  /* 메뉴 이름 */
+.menu-summary span { font-size: 13px; }  /* 날짜·끼니 */
+.rating-pick {  /* 별점 고르는 구역 (fieldset 기본 테두리 없애기) */
+  margin: 0; padding: 20px 8px; border: none; border-radius: 14px;
+  background: #fff; text-align: center;
+}
+.rating-pick legend { float: left; width: 100%; margin-bottom: 10px; font-size: 18px; font-weight: 700; }  /* "이 메뉴 어떠셨나요?" 질문 */
+.star-buttons { display: flex; justify-content: center; gap: 6px; clear: both; }  /* 큰 별 5개 가운데 정렬 */
+.star-btn { padding: 2px; background: none; border: none; border-radius: 8px; line-height: 0; }  /* 별 버튼 하나 (배경·테두리 없음) */
+.star-btn:hover .star:not(.on) { fill: #f0d78a; }  /* 마우스 올린 빈 별은 연한 노랑 */
+.star-btn:focus-visible { outline: 3px solid rgba(61, 123, 245, 0.35); }  /* 키보드 선택 표시 */
+.rating-word { margin: 10px 0 0; color: var(--blue); font-size: 14px; font-weight: 500; }  /* "4점 · 좋아요" 문구 */
+.rating-word.muted { color: var(--sub); }  /* 아직 안 골랐을 때 회색 */
+.textarea { resize: vertical; min-height: 110px; line-height: 1.5; }  /* 여러 줄 입력칸 (세로로만 크기 조절 가능) */
+.counter { display: flex; justify-content: space-between; font-size: 12px; color: var(--sub); }  /* 글자 수 줄 (100자 이내 ↔ 23 / 100) */
+.form-actions { display: flex; gap: 10px; }  /* 폼 아래 버튼들 가로로 */
+.form-actions .btn { flex: 1; }  /* 버튼들이 같은 너비로 나눠 가짐 */
+
+/* ---------- 내 평가 목록 ---------- */
+.my-review-list { display: flex; flex-direction: column; gap: 10px; }  /* 내 평가 카드 목록 */
+.my-review { background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }  /* 내 평가 카드 하나 */
+.my-review-main { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 10px; color: var(--ink); font-weight: 400; }  /* 카드 윗부분 (누르면 메뉴 상세) */
+.my-review-main:hover { text-decoration: none; background: #fafbfd; }  /* 마우스 올리면 연한 바탕 */
+.my-review-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }  /* 메뉴 이름 ↔ 날짜 */
+.my-review-head strong { font-size: 16px; }  /* 메뉴 이름 */
+.my-review-main p { margin: 0; font-size: 14px; word-break: break-all; }  /* 평가 글 */
+.my-review-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 4px 16px 10px; }  /* 수정·삭제 버튼 (오른쪽 정렬) */
+
+/* ---------- 마이페이지 ---------- */
+.my-grid, .my-col { display: flex; flex-direction: column; gap: 12px; }  /* 마이페이지 카드들 (모바일: 세로 1열) */
+.profile-card, .school-card { display: flex; align-items: center; gap: 12px; }  /* 프로필·학교 카드: 아이콘 + 글 + 버튼 가로로 */
+.school-icon {  /* 학교 아이콘 동그라미 */
+  display: grid; place-items: center; flex: none;
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--blue-soft); color: var(--blue);
+}
+.school-card strong { font-size: 15px; }  /* 학교 이름 */
+.mypage .stat-row { grid-template-columns: repeat(3, 1fr); }  /* 마이페이지 활동 요약은 3칸 */
+.mypage .stat { padding: 14px 4px; }  /* 요약 칸 안쪽 여백 */
+.mypage .stat strong { font-size: 20px; }  /* 요약 숫자 크게 */
+.go-row {  /* "알레르기 선택하러 가기 ›" 파란 줄 */
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 12px; padding: 12px 12px 12px 14px; border-radius: 10px;
+  background: var(--blue-soft); color: var(--blue); font-size: 14px;
+}
+.go-row:hover { text-decoration: none; background: #dde8fd; }  /* 마우스 올리면 조금 진하게 */
+
+.toggle-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; }  /* 알림 설정 한 줄: 글 ↔ 스위치 */
+.toggle-row > div { flex: 1; display: flex; flex-direction: column; gap: 2px; }  /* 제목+설명 묶음 */
+.toggle-row strong { font-size: 14px; font-weight: 500; }  /* 설정 이름 */
+.toggle {  /* 켜기/끄기 스위치 바탕 (회색 알약) */
+  position: relative; flex: none;
+  width: 46px; height: 28px; padding: 0; border: none; border-radius: 14px;
+  background: #d3d9e2; transition: background 0.15s;
+}
+.toggle span {  /* 스위치 안 흰 동그라미 */
+  position: absolute; top: 3px; left: 3px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s;  /* 값이 바뀔 때 부드럽게 */
+}
+.toggle[aria-checked='true'] { background: var(--blue); }  /* 켜짐 = 파란 바탕 */
+.toggle[aria-checked='true'] span { transform: translateX(18px); }  /* 켜짐 = 동그라미가 오른쪽으로 18px 이동 */
+.toggle:focus-visible { outline: 3px solid rgba(61, 123, 245, 0.35); outline-offset: 2px; }  /* 키보드 선택 표시 */
+
+.menu-list { padding: 4px 16px; }  /* 계정 메뉴 목록 카드 */
+.menu-list a, .menu-list button {  /* 메뉴 한 줄 (글 ↔ ›) */
+  display: flex; justify-content: space-between; align-items: center;
+  width: 100%; padding: 13px 0; border: none; background: none;
+  color: var(--ink); font-size: 15px; font-weight: 400; text-align: left;
+}
+.menu-list a + a, .menu-list a + button { border-top: 1px solid #f0f2f6; }  /* 줄 사이 구분선 (두 번째 줄부터 위쪽 선) */
+.menu-list a:hover { text-decoration: none; color: var(--blue); }  /* 마우스 올리면 파란 글씨 */
+.menu-list svg { color: #a0a8b5; vertical-align: middle; }  /* › 아이콘 회색 */
+.menu-list .muted { display: inline-flex; align-items: center; gap: 2px; font-size: 14px; }  /* 오른쪽 보조 글씨 (n개 ›) */
+
+/* ---------- 회원정보 수정 ---------- */
+.card-form { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; gap: 14px; }  /* 회원정보 수정 폼 카드 */
+.card-form .section-title { margin: 0; }  /* 카드 제목 */
+.card-form .form-actions { justify-content: flex-end; }  /* 버튼을 오른쪽으로 */
+.card-form .form-actions .btn { flex: none; }  /* 버튼 너비는 글자만큼 */
+.card-form .input:disabled { background: var(--bg); color: var(--sub); }  /* 수정 불가 칸(아이디)은 회색 */
+.danger-zone .section-title { color: var(--red); }  /* "회원 탈퇴" 제목 빨강 */
+.danger-zone p { margin: -6px 0 0; }  /* 경고 문구 위치 조정 */
+
+/* ---------- 공지사항 ---------- */
+.notice-list { display: flex; flex-direction: column; gap: 10px; }  /* 공지 목록 */
+.notice { background: #fff; border: 1px solid var(--line); border-radius: 14px; }  /* 공지 하나 (details 상자) */
+.notice summary {  /* 공지 제목 줄 (누르면 펼침/접힘) */
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 14px 16px; cursor: pointer; list-style: none;
+}
+.notice summary::-webkit-details-marker { display: none; }  /* 사파리 기본 ▶ 표시 숨김 */
+.notice summary strong { font-size: 15px; }  /* 공지 제목 */
+.notice[open] summary { border-bottom: 1px solid #f0f2f6; }  /* 펼쳐졌을 때 제목 아래 구분선 */
+.notice p { margin: 0; padding: 14px 16px; color: #3b4556; font-size: 14px; line-height: 1.6; }  /* 공지 내용 */
+
+/* ---------- 회원가입: 학교 선택칸 ---------- */
+.school-select {  /* 학교 선택 버튼 (입력칸처럼 생김: 글 ↔ 돋보기) */
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  text-align: left; cursor: pointer; color: var(--ink);
+}
+.school-select svg { color: var(--sub); flex: none; }  /* 돋보기 회색 */
+.placeholder-text { color: var(--placeholder); }  /* 아직 안 골랐을 때 회색 안내 글씨 */
+
+/* ---------- 학교 검색 · 평가 팝업 ---------- */
+.sheet.picker, .sheet.modal {  /* 학교 검색·평가 팝업 (모바일: 화면 대부분 높이) */
+  align-items: stretch; text-align: left; gap: 12px;
+  max-height: 88vh; max-height: 88dvh; padding-top: 16px;
+}
+.picker-head { display: flex; justify-content: space-between; align-items: center; }  /* 팝업 머리: 제목 ↔ X */
+.picker-head h2 { margin: 0; font-size: 19px; }  /* 팝업 제목 */
+.picker-search { flex-direction: row; gap: 8px; }  /* 검색칸 + 검색 버튼 가로로 */
+.picker-search .input { flex: 1; min-width: 0; }  /* 검색칸이 남는 너비 차지 */
+.picker-search .btn { padding: 0 16px; font-size: 15px; }  /* 검색 버튼 */
+.picker-results { flex: 1; min-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }  /* 검색 결과 목록 (넘치면 안쪽 스크롤) */
+.picker-hint { margin: 32px 0; text-align: center; color: var(--sub); font-size: 14px; line-height: 1.6; }  /* 검색 안내/결과 없음 문구 */
+.picker-hint.error { color: var(--red); }  /* 오류 문구 빨강 */
+.picker-item {  /* 검색 결과 학교 하나 (버튼) */
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 12px 14px; text-align: left;
+  background: #fff; border: 1px solid var(--line); border-radius: 12px; color: var(--ink);
+}
+.picker-item:hover, .picker-item:focus-visible { border-color: var(--blue); background: #f7faff; outline: none; }  /* 마우스·키보드로 가리키면 파란 테두리 */
+.picker-item strong { font-size: 15px; }  /* 학교 이름 */
+.picker-item span { font-size: 13px; color: var(--sub); }  /* 지역 · 학교 종류 */
+.picker-item small { font-size: 12px; color: #9aa3b2; }  /* 주소 */
+.modal-body { overflow-y: auto; margin: 0 -24px; padding: 0 24px; }  /* 평가 팝업 안쪽 (넘치면 스크롤) */
+.modal-body .rating-pick { background: var(--bg); }  /* 팝업 안 별점 구역 연회색 바탕 */
+
+.app .toast { bottom: 96px; }  /* 앱 화면에서는 하단 탭 위에 알림이 뜨게 */
+.overlay { z-index: 20; }  /* 팝업 뒤 반투명 검은 배경 (화면 전체를 덮음) */
+
+/* =================== 앱 화면 · 데스크톱 (1024px 이상) =================== */
+@media (min-width: 1024px) {  /* ↓ 여기 안의 규칙은 화면 너비 1024px 이상(노트북·PC)에서만 적용 */
+  body.app { padding-bottom: 0; }  /* 데스크톱: 하단 탭이 없으니 여백 없음 */
+  .bottom-nav { display: none; }  /* 데스크톱: 하단 탭 숨김 */
+  .sidebar {  /* 데스크톱: 왼쪽 240px 사이드바 (화면에 고정) */
+    position: fixed; top: 0; bottom: 0; left: 0; z-index: 10;
+    display: flex; flex-direction: column; gap: 6px;
+    width: 240px; padding: 28px 16px 24px;
+    background: #fff; border-right: 1px solid var(--line);
+  }
+  .sidebar-brand {  /* 사이드바 맨 위 로고 + 앱 이름 */
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 8px 24px; color: var(--ink); font-size: 18px;
+  }
+  .sidebar-brand:hover { text-decoration: none; }  /* 밑줄 없애기 */
+  .logo-sm { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--blue); color: #fff; }  /* 작은 파란 로고 사각형 */
+  .sidebar .nav-item {  /* 사이드바 메뉴 한 줄 (아이콘 + 글) */
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 12px; border-radius: 10px;
+    color: var(--sub); font-size: 15px; font-weight: 500;
+  }
+  .sidebar .nav-item:hover { text-decoration: none; background: var(--bg); }  /* 마우스 올리면 연회색 */
+  .sidebar .nav-item.active { background: var(--blue-soft); color: var(--blue); font-weight: 700; }  /* 지금 화면 메뉴 = 연한 파랑 바탕 */
+  .sidebar-me {  /* 사이드바 맨 아래 내 정보 (margin-top: auto로 바닥에 붙음) */
+    margin-top: auto;  /* 위쪽 여백을 자동으로 최대 → 맨 아래로 밀림 */
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 12px; background: var(--bg);
+    color: var(--ink); font-weight: 400;
+  }
+  .sidebar-me:hover { text-decoration: none; background: #eaeef4; }  /* 마우스 올리면 진한 회색 */
+  .sidebar-me-text { display: flex; flex-direction: column; min-width: 0; }  /* 이름 + 학교 세로로 */
+  .sidebar-me-text strong { font-size: 14px; }  /* 이름 */
+  .sidebar-me-text small { font-size: 12px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }  /* 학교 이름 (길면 … 으로 자름) */
+
+  .app-main { margin-left: 240px; max-width: none; padding: 36px 48px 48px; }  /* 데스크톱: 사이드바 너비(240px)만큼 오른쪽으로 밀기 */
+  .app-main.sub-page.narrow > * { max-width: 640px; margin-left: auto; margin-right: auto; }  /* 하위 화면 내용은 640px 가운데 */
+  .app-main.list-page > * { max-width: 760px; }  /* 목록 화면 내용은 최대 760px */
+  .page-head { padding: 0 0 20px; }  /* 제목 줄 여백 */
+  .page-head h1 { font-size: 28px; }  /* 제목 크게 */
+  .page-head p { font-size: 14px; }  /* 보조 줄 크게 */
+  .page-top { padding: 0 0 12px; }  /* 위쪽 여백 */
+  .back-link { font-size: 14px; color: var(--sub); }  /* 데스크톱: 뒤로 가기는 작은 회색 글씨 */
+
+  /* 메인: 가운데 식단 + 오른쪽 상세 */
+  .app-main.home { display: flex; padding: 0; min-height: 100vh; }  /* 메인: 식단 ↔ 상세 패널 가로 2단 */
+  .home-col { flex: 1; min-width: 0; padding: 36px 40px 48px; }  /* 왼쪽 식단 영역 (남는 너비 전부) */
+  .home-head h1 { font-size: 28px; }  /* 메인 제목 크게 */
+  .week-nav { margin-bottom: 14px; }  /* 주간 줄 여백 */
+  .week-days { gap: 10px; }  /* 날짜 간격 넓게 */
+  .day { flex-direction: row; justify-content: center; gap: 8px; padding: 12px 0; }  /* 데스크톱: 요일과 날짜를 가로로 "월 9" */
+  .day span { font-size: 14px; }  /* 요일 크게 */
+  .day strong { font-size: 16px; }  /* 날짜 */
+  .meal-tabs { max-width: 360px; }  /* 탭 묶음 최대 360px */
+  .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }  /* 데스크톱: 메뉴 카드를 격자로 (최소 210px씩, 너비에 맞춰 칸 수 자동) */
+  .menu-card { padding: 16px; }  /* 카드 안쪽 여백 */
+  .popular-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }  /* 데스크톱: 인기 메뉴 3칸 가로 */
+
+  .detail-panel {  /* 데스크톱: 오른쪽 상세 패널 보이기 (400px, 스크롤 따라 고정) */
+    display: block; flex: none;
+    width: 420px; height: 100vh; position: sticky; top: 0; overflow-y: auto;
+    padding: 36px 28px 0; background: #fff; border-left: 1px solid var(--line);
+  }
+  .detail-panel .detail { min-height: calc(100vh - 36px); }  /* 패널 안 상세 높이를 화면 높이만큼 */
+  .detail-panel .stat { background: var(--bg); border-color: transparent; }  /* 패널 안 영양 칸은 연회색 바탕 */
+  .detail-panel .detail-action {  /* 평가 버튼을 패널 맨 아래에 붙임 */
+    position: sticky; bottom: 0; margin: auto -28px 0; padding: 16px 28px 24px;
+    background: linear-gradient(rgba(255, 255, 255, 0), #fff 24%);  /* 반투명 검정 배경 (마지막 숫자 = 투명도) */
+  }
+  .sub-page .detail-action { position: static; margin: 0; padding: 0; border: none; background: none; }  /* 데스크톱: 평가 버튼 고정 해제 */
+
+  /* 마이페이지 2단 */
+  .mypage > * { max-width: 1040px; }  /* 마이페이지 최대 너비 1040px */
+  .my-grid { flex-direction: row; align-items: flex-start; gap: 24px; }  /* 데스크톱: 마이페이지 2열 */
+  .my-col { flex: 1; min-width: 0; gap: 16px; }  /* 각 열 같은 너비 */
+  .card { padding: 18px 20px; }  /* 카드 여백 넓게 */
+
+  .app .toast { bottom: 40px; }  /* 데스크톱 알림 위치 */
+  .sheet.modal { width: 520px; }  /* 평가 팝업 너비 */
+  .sheet.picker { width: 520px; height: 640px; }  /* 학교 검색 팝업 크기 고정 */
+}  /* 데스크톱 규칙 끝 */

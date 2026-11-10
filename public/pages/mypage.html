@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">  <!-- 문서 언어: 한국어 -->
+<!-- ===================================================================
+  마이페이지 (주소: /mypage)
+  - 프로필 · 내 학교 · 내 알레르기 · 활동 요약 · 알림 설정 · 메뉴 링크 · 로그아웃
+  - mypage.js가 GET /api/me 로 정보를 받아 그림
+  * 이 파일은 server.js가 해당 주소로 들어오면 보내주는 화면(HTML)이고,
+    실제 내용은 아래 <script>로 불러오는 JS 파일이 서버에서 받아 채워 넣어요.
+==================================================================== -->
+<head>
+  <!-- head: 화면에 보이지 않는 설정 (글자 인코딩, 제목, 디자인 파일 연결) -->
+  <meta charset="utf-8">  <!-- 한글이 깨지지 않도록 UTF-8 인코딩 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">  <!-- 휴대폰 화면 너비에 맞춰 보이게 함 (반응형 웹 필수) -->
+  <title>마이페이지 · 오늘의 급식</title>  <!-- 브라우저 탭에 보이는 제목 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">  <!-- 구글 폰트 서버에 미리 연결해 글꼴을 빨리 받음 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">  <!-- 글꼴: Noto Sans KR (보통·중간·굵게) -->
+  <link rel="stylesheet" href="/static/css/style.css">  <!-- 모든 화면이 함께 쓰는 디자인 파일 -->
+</head>
+<body class="app" data-nav="my">  <!-- data-nav = 메뉴바에서 "마이"를 강조 -->
+  <main class="app-main mypage">  <!-- 마이페이지 틀 -->
+    <header class="page-head"><h1>마이페이지</h1></header>
+    <div id="mypage"><p class="muted pad">불러오는 중…</p></div>  <!-- mypage.js가 프로필·학교·알레르기·설정 카드를 여기에 그림 -->
+  </main>
+  <!-- 자바스크립트: 위에서부터 순서대로 실행됨 (api.js를 먼저 불러야 다른 파일이 api()를 쓸 수 있음) -->
+  <script src="/static/js/api.js"></script>  <!-- 공통 도구: 서버 요청(api), 알림(toast), 글자 안전 처리(esc) 등 -->
+  <script src="/static/js/layout.js"></script>  <!-- 사이드바(데스크톱)·하단 메뉴바(모바일)를 그림 -->
+  <script src="/static/js/school-picker.js"></script>  <!-- 학교 검색 창 (나이스 학교 검색) -->
+  <script src="/static/js/mypage.js"></script>  <!-- 마이페이지 동작 -->
+</body>
+</html>

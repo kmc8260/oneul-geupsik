@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">  <!-- 문서 언어: 한국어 -->
+<!-- ===================================================================
+  로그인 화면 (주소: /login)
+  - 아이디·비밀번호를 입력하면 login.js가 POST /api/auth/login 으로 보냄
+  - 데스크톱: 왼쪽 소개 패널 + 오른쪽 입력 폼 / 모바일: 로고 + 입력 폼
+  * 이 파일은 server.js가 해당 주소로 들어오면 보내주는 화면(HTML)이고,
+    실제 내용은 아래 <script>로 불러오는 JS 파일이 서버에서 받아 채워 넣어요.
+==================================================================== -->
+<head>
+  <!-- head: 화면에 보이지 않는 설정 (글자 인코딩, 제목, 디자인 파일 연결) -->
+  <meta charset="utf-8">  <!-- 한글이 깨지지 않도록 UTF-8 인코딩 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">  <!-- 휴대폰 화면 너비에 맞춰 보이게 함 (반응형 웹 필수) -->
+  <title>로그인 · 오늘의 급식</title>  <!-- 브라우저 탭에 보이는 제목 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">  <!-- 구글 폰트 서버에 미리 연결해 글꼴을 빨리 받음 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">  <!-- 글꼴: Noto Sans KR (보통·중간·굵게) -->
+  <link rel="stylesheet" href="/static/css/style.css">  <!-- 모든 화면이 함께 쓰는 디자인 파일 -->
+</head>
+<body>
+  <main class="auth">  <!-- 로그인/회원가입 공통 틀 -->
+    <!-- 데스크톱 왼쪽 소개 패널 -->
+    <section class="brand-panel" aria-hidden="true">  <!-- aria-hidden: 화면 낭독기는 장식이라 읽지 않음 -->
+      <div class="logo">  <!-- 달력 모양 로고 아이콘 -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>  <!-- 달력 아이콘 그림 (SVG) -->
+      </div>
+      <h2>급식 메뉴와 알레르기 정보를<br>한눈에 확인하세요</h2>
+      <p>알레르기를 등록하면 주의할 메뉴를 먼저 알려드려요.</p>
+      <ul>
+        <li><span><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>날짜별 급식 식단과 영양 정보</li>  <!-- 체크 아이콘 + 기능 소개 -->
+        <li><span><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>메뉴별 알레르기 원인 식재료</li>  <!-- 체크 아이콘 + 기능 소개 -->
+        <li><span><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>별점과 한 줄 평으로 만족도 공유</li>  <!-- 체크 아이콘 + 기능 소개 -->
+      </ul>
+    </section>
+
+    <section class="form-panel">  <!-- 입력 폼 영역 -->
+      <div class="form-wrap">
+        <!-- 모바일 상단 로고 -->
+        <div class="mobile-brand">
+          <div class="logo">  <!-- 달력 모양 로고 아이콘 -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>  <!-- 달력 아이콘 그림 (SVG) -->
+          </div>
+          <h1>오늘의 급식</h1>
+          <p>급식 메뉴와 알레르기 정보를 한눈에</p>
+        </div>
+
+        <h1 class="form-title">로그인</h1>  <!-- 데스크톱에서 보이는 큰 제목 -->
+        <p class="form-desc">학교 계정으로 로그인해 주세요.</p>
+
+        <form id="login-form" novalidate>  <!-- novalidate: 브라우저 기본 검사 대신 JS로 직접 검사 -->
+          <div class="field">
+            <label for="loginId">아이디</label>
+            <input class="input" id="loginId" name="loginId" autocomplete="username" placeholder="아이디를 입력하세요" required>  <!-- 아이디 입력칸 -->
+          </div>
+          <div class="field">
+            <label for="password">비밀번호</label>
+            <input class="input" id="password" name="password" type="password" autocomplete="current-password" placeholder="비밀번호를 입력하세요" required>  <!-- 비밀번호 입력칸 (type=password: 글자가 ●로 가려짐) -->
+          </div>
+          <p class="form-error" id="form-error" role="alert"></p>  <!-- 서버 오류 등 폼 전체 오류 메시지 자리 (role=alert: 바뀌면 바로 읽어줌) -->
+          <button class="btn btn-primary btn-block" type="submit">로그인</button>  <!-- 누르면 login.js가 로그인 요청 -->
+        </form>
+
+        <p class="switch">아직 회원이 아니신가요? <a href="/signup">회원가입</a></p>  <!-- 다른 화면으로 가는 링크 -->
+      </div>
+    </section>
+  </main>
+  <!-- 자바스크립트: 위에서부터 순서대로 실행됨 (api.js를 먼저 불러야 다른 파일이 api()를 쓸 수 있음) -->
+  <script src="/static/js/api.js"></script>  <!-- 공통 도구: 서버 요청(api), 알림(toast), 글자 안전 처리(esc) 등 -->
+  <script src="/static/js/login.js"></script>  <!-- 로그인 화면 동작 -->
+</body>
+</html>
