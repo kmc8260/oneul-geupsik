@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">  <!-- 문서 언어: 한국어 -->
+<!-- ===================================================================
+  메인 화면 = 오늘의 급식 (주소: /)
+  - 주간 날짜 탭 · 급식 메뉴 · 내 알레르기 경고 · 영양 정보 · 인기 메뉴를 보여줌
+  - main.js가 GET /api/meals 로 한 주 식단을 받아 그림
+  - 데스크톱에서는 오른쪽 detail-panel에 고른 메뉴의 상세가 바로 나옴
+  * 이 파일은 server.js가 해당 주소로 들어오면 보내주는 화면(HTML)이고,
+    실제 내용은 아래 <script>로 불러오는 JS 파일이 서버에서 받아 채워 넣어요.
+==================================================================== -->
+<head>
+  <!-- head: 화면에 보이지 않는 설정 (글자 인코딩, 제목, 디자인 파일 연결) -->
+  <meta charset="utf-8">  <!-- 한글이 깨지지 않도록 UTF-8 인코딩 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">  <!-- 휴대폰 화면 너비에 맞춰 보이게 함 (반응형 웹 필수) -->
+  <title>오늘의 급식</title>  <!-- 브라우저 탭에 보이는 제목 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">  <!-- 구글 폰트 서버에 미리 연결해 글꼴을 빨리 받음 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">  <!-- 글꼴: Noto Sans KR (보통·중간·굵게) -->
+  <link rel="stylesheet" href="/static/css/style.css">  <!-- 모든 화면이 함께 쓰는 디자인 파일 -->
+</head>
+<body class="app" data-nav="meal">  <!-- app = 메뉴바가 있는 화면, data-nav = 메뉴바에서 "식단"을 강조 -->
+  <main class="app-main home">  <!-- 메인 화면 (데스크톱: 왼쪽 식단 + 오른쪽 상세 2단) -->
+    <div class="home-col">  <!-- 식단 영역 -->
+      <header class="page-head home-head">  <!-- 화면 제목 줄 -->
+        <div>
+          <h1>오늘의 급식</h1>
+          <p class="muted" id="school-line">&nbsp;</p>  <!-- 내 학교 이름이 들어갈 자리 (&nbsp; = 빈칸이라 높이 유지) -->
+        </div>
+        <button type="button" class="link-btn" id="today-btn">오늘</button>  <!-- 누르면 오늘 날짜로 돌아옴 -->
+      </header>
+
+      <div id="home-body">  <!-- main.js가 날짜 탭·메뉴·경고·영양 정보를 여기에 그림 -->
+        <p class="muted pad">불러오는 중…</p>  <!-- 서버에서 받기 전 잠깐 보이는 문구 (JS가 내용으로 바꿈) -->
+      </div>
+    </div>
+
+    <!-- 데스크톱 전용: 고른 메뉴의 상세 -->
+    <aside class="detail-panel" id="detail-panel" aria-label="메뉴 상세" aria-live="polite"></aside>  <!-- main.js가 menu-detail.js로 상세를 그려 넣음 (모바일에서는 숨김) -->
+  </main>
+
+  <!-- 자바스크립트: 위에서부터 순서대로 실행됨 (api.js를 먼저 불러야 다른 파일이 api()를 쓸 수 있음) -->
+  <script src="/static/js/api.js"></script>  <!-- 공통 도구: 서버 요청(api), 알림(toast), 글자 안전 처리(esc) 등 -->
+  <script src="/static/js/layout.js"></script>  <!-- 사이드바(데스크톱)·하단 메뉴바(모바일)를 그림 -->
+  <script src="/static/js/school-picker.js"></script>  <!-- 학교 검색 창 (나이스 학교 검색) -->
+  <script src="/static/js/menu-detail.js"></script>  <!-- 메뉴 상세 화면을 그리는 공통 함수 -->
+  <script src="/static/js/review-form.js"></script>  <!-- 별점·한 줄 평 작성 폼 공통 함수 -->
+  <script src="/static/js/main.js"></script>  <!-- 메인 화면 동작 -->
+</body>
+</html>

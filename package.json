@@ -1,0 +1,35 @@
+{
+  "//": [
+    "JSON 파일에는 주석을 쓸 수 없어서, npm이 무시하는 \"//\" 항목에 설명을 적었습니다.",
+    "name/version/description: 이 프로젝트의 이름, 버전, 설명",
+    "main: 프로그램이 시작되는 파일 (서버 코드)",
+    "scripts.start: 터미널에서 npm start 라고 치면 실행되는 명령 (서버 켜기)",
+    "scripts.dev: npm run dev 로 실행하면 코드를 고칠 때마다 서버가 자동으로 다시 켜짐",
+    "dependencies: npm install 하면 node_modules 폴더에 설치되는 라이브러리 목록",
+    "  bcryptjs: 비밀번호를 해시(암호화)로 바꾸고 비교",
+    "  dotenv: .env 파일의 설정값을 읽어 process.env 로 넣어줌",
+    "  express: 웹 서버를 만드는 라이브러리 (주소마다 어떤 일을 할지 정함)",
+    "  express-session: 로그인 상태를 쿠키와 세션으로 기억",
+    "  mysql2: Node.js에서 MySQL에 접속해 SQL을 실행",
+    "engines.node: 배포 사이트가 이 버전 이상의 Node.js로 실행하도록 알려줌",
+    "버전 앞의 ^ 는 '이 버전과 호환되는 더 새 버전도 괜찮음'이라는 뜻"
+  ],
+  "name": "oneul-geupsik",
+  "version": "0.1.0",
+  "description": "학교 급식 메뉴·알레르기 정보 서비스 (로그인·회원가입)",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-session": "^1.18.1",
+    "mysql2": "^3.11.3"
+  }
+}

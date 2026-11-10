@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">  <!-- 문서 언어: 한국어 -->
+<!-- ===================================================================
+  가입 완료 화면 (주소: /welcome)
+  - "가입을 환영해요" 문구와 함께 알레르기 등록 안내 팝업을 띄움
+  - 선택하러 가기 → /allergy, 나중에 할게요 → / (메인)
+  * 이 파일은 server.js가 해당 주소로 들어오면 보내주는 화면(HTML)이고,
+    실제 내용은 아래 <script>로 불러오는 JS 파일이 서버에서 받아 채워 넣어요.
+==================================================================== -->
+<head>
+  <!-- head: 화면에 보이지 않는 설정 (글자 인코딩, 제목, 디자인 파일 연결) -->
+  <meta charset="utf-8">  <!-- 한글이 깨지지 않도록 UTF-8 인코딩 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">  <!-- 휴대폰 화면 너비에 맞춰 보이게 함 (반응형 웹 필수) -->
+  <title>가입 완료 · 오늘의 급식</title>  <!-- 브라우저 탭에 보이는 제목 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">  <!-- 구글 폰트 서버에 미리 연결해 글꼴을 빨리 받음 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">  <!-- 글꼴: Noto Sans KR (보통·중간·굵게) -->
+  <link rel="stylesheet" href="/static/css/style.css">  <!-- 모든 화면이 함께 쓰는 디자인 파일 -->
+</head>
+<body>
+  <main class="welcome">  <!-- 가입 완료 화면 본문 -->
+    <div class="check-badge">  <!-- 초록 체크 표시 -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </div>
+    <h1>가입을 환영해요<span id="member-name"></span>!</h1>  <!-- welcome.js가 ", 이름님"을 채워 넣음 -->
+    <p>이제 급식 메뉴와 알레르기 정보를 볼 수 있어요</p>
+  </main>
+
+  <!-- 가입 직후 알레르기 등록 안내 (모바일: 바텀시트, 데스크톱: 가운데 팝업) -->
+  <div class="overlay" id="allergy-prompt">  <!-- 화면 전체를 덮는 반투명 배경 (welcome.js가 show 클래스를 붙여 보이게 함) -->
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="prompt-title" aria-describedby="prompt-desc">  <!-- 팝업 창 본체 (role=dialog: 대화상자임을 알림) -->
+      <div class="handle"></div>  <!-- 바텀시트 위쪽 손잡이 모양 막대 (모바일) -->
+      <div class="alert-badge" aria-hidden="true">!</div>  <!-- 느낌표 아이콘 -->
+      <h2 id="prompt-title">지금 바로 알레르기를<br>선택하러 갈까요?</h2>
+      <p id="prompt-desc">알레르기를 등록해 두면 식단에서<br>주의해야 할 메뉴를 바로 알려드려요.</p>
+      <div class="sheet-actions">
+        <a class="btn btn-primary btn-block" href="/allergy" id="go-allergy">선택하러 가기</a>  <!-- 알레르기 선택 화면으로 이동 -->
+        <a class="btn btn-text btn-block" href="/" id="later">나중에 할게요</a>  <!-- 나중에 등록 → 메인으로 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 자바스크립트: 위에서부터 순서대로 실행됨 (api.js를 먼저 불러야 다른 파일이 api()를 쓸 수 있음) -->
+  <script src="/static/js/api.js"></script>  <!-- 공통 도구: 서버 요청(api), 알림(toast), 글자 안전 처리(esc) 등 -->
+  <script src="/static/js/welcome.js"></script>  <!-- 가입 완료 화면 동작 -->
+</body>
+</html>
