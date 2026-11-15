@@ -39,50 +39,6 @@ npm start
 
 `.env`를 고친 뒤에는 터미널에서 `Ctrl + C`로 서버를 끄고 `npm start`로 다시 켜야 반영됩니다.
 
-## 배포하기 (인터넷 주소로 공개)
-
-배포 사이트에서는 Workbench로 SQL을 돌리기 어려워요. 그래서 환경변수에 `DB_AUTO_INIT=true`를 넣으면
-**서버가 켜질 때 `db/schema.sql`을 자동으로 실행해서 테이블을 만들어요.** 여러 번 켜져도 안전해요.
-
-### 0. GitHub에 올리기
-- `.env`와 `node_modules`는 `.gitignore`에 있어서 올라가지 않아요. **나이스 키는 절대 GitHub에 올리지 마세요.**
-- 저장소는 Private(비공개)로 만들어도 배포할 수 있어요.
-
-### A. 클라우드타입 (국내 서버)
-1. https://cloudtype.io 가입 → GitHub 연결 → 새 프로젝트 만들기
-2. 프로젝트에 **MariaDB** 추가 → root 비밀번호와 DB 이름(`oneul_geupsik`) 설정 → 배포
-3. 프로젝트에 **Node.js** 서비스 추가 → GitHub 저장소 선택
-   - Node 버전 22, 포트 `3000`, 시작 명령 `npm start`
-4. Node.js 서비스의 **환경변수**에 아래 값 입력 → 배포
-
-| 이름 | 값 |
-| --- | --- |
-| `DB_HOST` | MariaDB 서비스의 연결 정보에 나오는 **내부 호스트** |
-| `DB_PORT` | `3306` |
-| `DB_USER` | `root` |
-| `DB_PASSWORD` | 2번에서 정한 비밀번호 |
-| `DB_NAME` | `oneul_geupsik` |
-| `SESSION_SECRET` | 아무 긴 문자열 (영문·숫자 섞어 30자 이상) |
-| `NEIS_API_KEY` | 나이스 인증키 |
-| `DB_AUTO_INIT` | `true` |
-
-- 무료 플랜: 카드 등록 필요, 하루 1번 자동 정지(대시보드에서 다시 시작), 디스크가 임시라 DB 데이터가 지워질 수 있음
-  → 발표·시연용으로는 충분하지만 데이터를 오래 보관하려면 유료(하비) 플랜 필요
-
-### B. Render + TiDB Cloud (카드 없이 무료, 해외 서버)
-1. https://tidbcloud.com 가입 → Starter(무료) 클러스터 만들기 → Connect 화면에서 host·port(4000)·user·password 확인
-2. https://render.com 가입 → New → Web Service → GitHub 저장소 선택
-   - Build Command `npm install`, Start Command `npm start`, Instance Type `Free`
-3. 환경변수: 위 표와 같고 아래만 다르게
-   - `DB_HOST` / `DB_PORT`(4000) / `DB_USER` / `DB_PASSWORD` = TiDB Connect 화면의 값
-   - `DB_SSL` = `true` (TiDB는 암호화 연결만 받음)
-- 무료 플랜은 15분 동안 접속이 없으면 잠들어서, 다음 첫 접속이 30초~1분 정도 느려요.
-
-### 배포 후 확인
-- 배포 로그에 `DB 준비 완료`와 `오늘의 급식 서버 실행 중`이 나오면 성공
-- 로그인 상태는 서버 메모리에 저장돼서 **서버가 다시 켜지면 다시 로그인**해야 해요 (회원·평가 데이터는 DB에 그대로)
-- 코드를 고친 뒤 GitHub에 push하면 배포 사이트가 새 코드로 다시 배포해요
-
 ## 화면
 
 | 주소 | 화면 | 하는 일 |
@@ -156,8 +112,7 @@ db/schema.sql            전체 테이블 11개 생성 SQL (여러 번 실행해
 db/reset.sql             DB 통째로 지우기 (처음부터 다시 만들 때만)
 
 src/server.js            서버 시작 · 세션(로그인 상태) · 화면 주소 · API 연결 · 오류 처리
-src/db.js                MySQL 연결 풀 (모든 SQL이 이걸 통해 실행됨, DB_SSL 설정)
-src/init-db.js           배포용: DB_AUTO_INIT=true면 서버 시작 때 schema.sql 자동 실행
+src/db.js                MySQL 연결 풀 (모든 SQL이 이걸 통해 실행됨)
 src/middleware.js        로그인 확인(requireLogin) · 비동기 오류 처리(wrap)
 src/neis.js              나이스 API 호출 (학교 검색 · 급식 식단) 과 응답 해석
 src/services/meal.js     식단 동기화(나이스 → DB 저장) · 한 주 식단 조회 · 인기 메뉴

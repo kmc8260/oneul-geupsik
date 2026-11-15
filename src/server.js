@@ -12,7 +12,6 @@ const app = express();                                                // 웹 서
 const PUBLIC = path.join(__dirname, '..', 'public');                  // public 폴더 위치 (HTML·CSS·JS 화면 파일)
 const page = (name) => (req, res) => res.sendFile(path.join(PUBLIC, 'pages', name)); // public/pages 안의 HTML 파일을 그대로 보내주는 도우미
 
-app.set('trust proxy', 1);                       // 배포 사이트는 앞단(프록시)에서 HTTPS를 처리함 → 그 정보를 믿어야 아래 secure 쿠키가 동작
 app.use(express.json());                          // 요청 본문의 JSON을 읽어서 req.body 로 만들어 줌
 app.use(
   session({
@@ -20,7 +19,7 @@ app.use(
     secret: process.env.SESSION_SECRET || 'dev-only-secret', // 쿠키 위조를 막는 비밀 문자열 (.env)
     resave: false,                                // 바뀐 게 없으면 세션을 다시 저장하지 않음
     saveUninitialized: false,                     // 로그인 전(빈 세션)에는 쿠키를 만들지 않음
-    cookie: { httpOnly: true, sameSite: 'lax', secure: 'auto', maxAge: 1000 * 60 * 60 * 24 * 7 }, // 7일 (httpOnly: 자바스크립트로 쿠키를 못 읽게 함, secure 'auto': https로 접속하면 https에서만 쿠키 전송)
+    cookie: { httpOnly: true, sameSite: 'lax', maxAge: 1000 * 60 * 60 * 24 * 7 }, // 7일 (httpOnly: 자바스크립트로 쿠키를 못 읽게 해 보안 강화)
   })
 );
 app.use('/static', express.static(PUBLIC, { index: false })); // /static/css/style.css 처럼 요청하면 public 폴더의 파일을 보내줌
@@ -66,14 +65,10 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: '잠시 후 다시 시도해 주세요.' });                     // 그 밖의 알 수 없는 오류
 });
 
-const PORT = Number(process.env.PORT || 3000);     // 서버 포트 (.env의 PORT, 없으면 3000. 배포 사이트는 PORT를 알아서 넣어 줌)
-require('./init-db')()                             // DB_AUTO_INIT=true면 schema.sql로 테이블 자동 생성 (배포용)
-  .catch((err) => console.error('DB 자동 생성 실패:', err.message)) // 실패해도 서버는 켜서 화면에 DB 오류 안내가 나오게 함
-  .then(() => {
-    app.listen(PORT, () => {                       // 서버 켜기: 이제부터 요청을 받기 시작
-      console.log(`오늘의 급식 서버 실행 중: http://localhost:${PORT}`);
-      if (!process.env.NEIS_API_KEY) {             // 나이스 키가 없으면 경고 출력
-        console.log('※ .env에 NEIS_API_KEY가 없어요. 나이스 키 없이 호출하면 결과가 5개까지만 나와요.');
-      }
-    });
-  });
+const PORT = Number(process.env.PORT || 3000);     // 서버 포트 (.env의 PORT, 없으면 3000)
+app.listen(PORT, () => {                           // 서버 켜기: 이제부터 요청을 받기 시작
+  console.log(`오늘의 급식 서버 실행 중: http://localhost:${PORT}`);
+  if (!process.env.NEIS_API_KEY) {                 // 나이스 키가 없으면 경고 출력
+    console.log('※ .env에 NEIS_API_KEY가 없어요. 나이스 키 없이 호출하면 결과가 5개까지만 나와요.');
+  }
+});
