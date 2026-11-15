@@ -11,16 +11,12 @@
     "  express: 웹 서버를 만드는 라이브러리 (주소마다 어떤 일을 할지 정함)",
     "  express-session: 로그인 상태를 쿠키와 세션으로 기억",
     "  mysql2: Node.js에서 MySQL에 접속해 SQL을 실행",
-    "engines.node: 배포 사이트가 이 버전 이상의 Node.js로 실행하도록 알려줌",
     "버전 앞의 ^ 는 '이 버전과 호환되는 더 새 버전도 괜찮음'이라는 뜻"
   ],
   "name": "oneul-geupsik",
   "version": "0.1.0",
   "description": "학교 급식 메뉴·알레르기 정보 서비스 (로그인·회원가입)",
   "main": "src/server.js",
-  "engines": {
-    "node": ">=18"
-  },
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"
