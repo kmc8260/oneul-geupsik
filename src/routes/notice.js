@@ -15,7 +15,7 @@ router.get('/', wrap(async (req, res) => {
     `SELECT notice_id, title, body, DATE_FORMAT(created_at, '%Y-%m-%d') AS created_at
        FROM notice ORDER BY created_at DESC, notice_id DESC`
   );
-  res.json({ notices: rows.map((n) => ({ noticeId: n.notice_id, title: n.title, body: n.body, date: n.created_at })) }); // 화면에서 쓰기 편한 이름으로 바꿈
+  res.json({ notices: rows.map((n) => ({ noticeId: n.notice_id, title: n.title, body: n.body, date: n.created_at })) });
 }));
 
 module.exports = router;

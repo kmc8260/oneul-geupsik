@@ -4,11 +4,11 @@
 // ===================================================================
 const express = require('express');
 const pool = require('../db');
-const { todayStr } = require('../services/meal');   // 오늘 날짜 문자열 (미래 급식 평가 막기용)
+const { todayStr } = require('../services/meal');
 const { requireLoginApi, wrap } = require('../middleware');
 
 const router = express.Router();
-router.use(requireLoginApi); // 평가 API는 모두 로그인 필요
+router.use(requireLoginApi);
 
 // ---------- POST /api/reviews ---------- body: { mealId, menuId, rating, comment }
 // 이미 남긴 평가가 있으면 고침 (같은 날 같은 메뉴는 한 번만: UNIQUE 제약조건)
@@ -34,8 +34,8 @@ router.post('/', wrap(async (req, res) => {
       WHERE mm.meal_id = ? AND mm.menu_id = ?`,
     [memberId, mealId, menuId]
   );
-  if (!rows[0]) return res.status(404).json({ message: '평가할 메뉴를 찾을 수 없어요.' });  // 없는 메뉴이거나 다른 학교 급식
-  if (rows[0].meal_date > todayStr()) {                                                     // 날짜 문자열은 크기 비교가 곧 날짜 비교
+  if (!rows[0]) return res.status(404).json({ message: '평가할 메뉴를 찾을 수 없어요.' });
+  if (rows[0].meal_date > todayStr()) {
     return res.status(400).json({ message: '아직 제공되지 않은 급식은 평가할 수 없어요.' });
   }
 
@@ -44,7 +44,7 @@ router.post('/', wrap(async (req, res) => {
     `INSERT INTO review (member_id, meal_id, menu_id, rating, comment)
      VALUES (?, ?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE rating = VALUES(rating), comment = VALUES(comment)`,
-    [memberId, mealId, menuId, rating, comment || null]   // 의견이 비어 있으면 NULL로 저장
+    [memberId, mealId, menuId, rating, comment || null]
   );
   // affectedRows: 1 = 새로 등록, 2 = 기존 평가 수정
   res.status(result.affectedRows === 1 ? 201 : 200).json({ ok: true, updated: result.affectedRows !== 1 });
@@ -86,7 +86,7 @@ router.delete('/:id', wrap(async (req, res) => {
     Number(req.params.id),
     req.session.member.memberId,
   ]);
-  if (!result.affectedRows) return res.status(404).json({ message: '평가를 찾을 수 없어요.' }); // 지워진 줄이 0개 = 없거나 내 것이 아님
+  if (!result.affectedRows) return res.status(404).json({ message: '평가를 찾을 수 없어요.' });
   res.json({ ok: true });
 }));
 

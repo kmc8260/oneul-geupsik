@@ -4,13 +4,13 @@
 // ===================================================================
 const express = require('express');
 const pool = require('../db');
-const { getMealsForRange, todayStr } = require('../services/meal'); // 나이스 동기화 + 식단 조회
+const { getMealsForRange, todayStr } = require('../services/meal');
 const { requireLoginApi, wrap } = require('../middleware');
 
 const router = express.Router();
-router.use(requireLoginApi); // 모든 식단 API는 로그인한 회원만
+router.use(requireLoginApi);
 
-const DATE_RULE = /^\d{4}-\d{2}-\d{2}$/; // 날짜 형식 YYYY-MM-DD
+const DATE_RULE = /^\d{4}-\d{2}-\d{2}$/;
 
 // 로그인한 회원의 학교 정보 가져오기 (학교를 아직 안 골랐으면 null)
 async function loadMySchool(memberId) {
@@ -32,18 +32,18 @@ function maskName(name) {
 // ---------- GET /api/meals?from=2026-11-02&to=2026-11-06 ----------
 // 메인 화면이 한 주(월~금) 식단을 받아갈 때 쓰는 주소
 router.get('/meals', wrap(async (req, res) => {
-  const { from, to } = req.query;                                   // 주소의 ?from=...&to=...
+  const { from, to } = req.query;
   if (!DATE_RULE.test(from || '') || !DATE_RULE.test(to || '') || from > to) {
     return res.status(400).json({ message: '날짜가 올바르지 않아요.' });
   }
-  const days = (new Date(to) - new Date(from)) / 86400000;          // 기간 일수 (86400000ms = 하루)
-  if (days > 13) return res.status(400).json({ message: '한 번에 2주까지만 조회할 수 있어요.' }); // 너무 긴 기간은 막음
+  const days = (new Date(to) - new Date(from)) / 86400000;
+  if (days > 13) return res.status(400).json({ message: '한 번에 2주까지만 조회할 수 있어요.' });
 
   const school = await loadMySchool(req.session.member.memberId);
-  if (!school) return res.status(409).json({ code: 'NO_SCHOOL', message: '학교를 먼저 선택해 주세요.' }); // 화면은 code를 보고 "학교 선택" 안내를 띄움
+  if (!school) return res.status(409).json({ code: 'NO_SCHOOL', message: '학교를 먼저 선택해 주세요.' });
 
   const data = await getMealsForRange(req.session.member, school, from, to);
-  res.json({ school: { name: school.school_name }, today: todayStr(), ...data }); // ...data = meals, popular, warning 을 그대로 펼쳐 넣음
+  res.json({ school: { name: school.school_name }, today: todayStr(), ...data });
 }));
 
 // ---------- GET /api/meals/:mealId/menus/:menuId ---------- 메뉴 상세
@@ -113,7 +113,7 @@ router.get('/meals/:mealId/menus/:menuId', wrap(async (req, res) => {
     name: row.menu_name,
     date: row.meal_date,
     type: row.meal_type,
-    nutrition: {                                   // 한 끼 전체 영양 정보
+    nutrition: {
       calories: row.calories === null ? null : Number(row.calories),
       carbs: row.carbs === null ? null : Number(row.carbs),
       protein: row.protein === null ? null : Number(row.protein),
@@ -127,11 +127,11 @@ router.get('/meals/:mealId/menus/:menuId', wrap(async (req, res) => {
       rating: r.rating,
       comment: r.comment,
       date: r.meal_date,
-      writer: maskName(r.name),                    // 이름 가리기
+      writer: maskName(r.name),
       mine: Boolean(r.mine),
     })),
     myReview: myReviewRows[0] ? { reviewId: myReviewRows[0].review_id, rating: myReviewRows[0].rating, comment: myReviewRows[0].comment } : null,
-    canReview: row.meal_date <= todayStr(),        // 오늘 이전(포함) 급식만 평가 가능
+    canReview: row.meal_date <= todayStr(),
   });
 }));
 

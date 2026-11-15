@@ -5,4 +5,4 @@
 -- 이 파일을 실행한 뒤 db/schema.sql을 실행하면 빈 DB가 새로 만들어집니다.
 -- ===================================================================
 
-DROP DATABASE IF EXISTS oneul_geupsik;  -- oneul_geupsik DB가 있으면 안의 테이블까지 전부 삭제 (없으면 아무 일도 안 함)
+DROP DATABASE IF EXISTS oneul_geupsik;

@@ -5,13 +5,13 @@
 
 // API용: 로그인 안 했으면 401(인증 필요) 오류를 JSON으로 돌려줌
 function requireLoginApi(req, res, next) {
-  if (!req.session.member) return res.status(401).json({ message: '로그인이 필요해요.' }); // 세션에 회원 정보가 없으면 = 로그인 안 함
-  next(); // 로그인했으면 통과
+  if (!req.session.member) return res.status(401).json({ message: '로그인이 필요해요.' });
+  next();
 }
 
 // 화면용: 로그인 안 했으면 로그인 화면으로 보냄
 function requireLoginPage(req, res, next) {
-  if (!req.session.member) return res.redirect('/login'); // redirect: 브라우저를 다른 주소로 이동시킴
+  if (!req.session.member) return res.redirect('/login');
   next();
 }
 
@@ -25,4 +25,4 @@ function guestOnlyPage(req, res, next) {
 // 이걸로 감싸지 않으면 await 중에 난 오류가 처리되지 않고 서버가 멈출 수 있음
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
-module.exports = { requireLoginApi, requireLoginPage, guestOnlyPage, wrap }; // 다른 파일에서 쓸 수 있게 내보냄
+module.exports = { requireLoginApi, requireLoginPage, guestOnlyPage, wrap };
