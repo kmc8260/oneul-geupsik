@@ -10,53 +10,58 @@ SET NAMES utf8mb4;
 
 -- 데이터베이스(테이블들을 담는 그릇) 만들기
 CREATE DATABASE IF NOT EXISTS oneul_geupsik
-  DEFAULT CHARACTER SET utf8mb4            -- 한글·이모지까지 저장할 수 있는 문자셋
-  DEFAULT COLLATE utf8mb4_unicode_ci;      -- 문자 비교·정렬 규칙 (대소문자 구분 안 함)
+  DEFAULT CHARACTER SET utf8mb4
+  DEFAULT COLLATE utf8mb4_unicode_ci;
 
-USE oneul_geupsik;                         -- 아래에서 만드는 테이블은 모두 이 DB 안에 생김
+USE oneul_geupsik;
 
 -- =========================================================
 -- 학교 (school) : 나이스에서 검색해 고른 학교만 저장
 -- =========================================================
+-- 교육청 코드 + 학교 코드는 나이스의 학교 식별값 → 둘을 묶어 UNIQUE (같은 학교 중복 저장 방지)
 CREATE TABLE IF NOT EXISTS school (
-  school_id   INT AUTO_INCREMENT PRIMARY KEY,  -- 학교 번호 (1, 2, 3… 자동으로 매겨짐)
-  office_code VARCHAR(10)  NOT NULL,                 -- 시도교육청코드 (ATPT_OFCDC_SC_CODE)
-  school_code VARCHAR(10)  NOT NULL,                 -- 행정표준코드 (SD_SCHUL_CODE)
-  school_name VARCHAR(100) NOT NULL,                 -- 학교 이름
-  school_kind VARCHAR(20)  NULL,                     -- 초등학교 / 중학교 / 고등학교 …
-  region      VARCHAR(20)  NULL,                     -- 서울특별시 …
-  address     VARCHAR(200) NULL,                     -- 도로명 주소
-  CONSTRAINT uq_school_code UNIQUE (office_code, school_code)  -- 같은 학교가 두 번 저장되지 않게 (교육청+학교코드 조합은 하나뿐)
+  school_id   INT AUTO_INCREMENT PRIMARY KEY,
+  office_code VARCHAR(10)  NOT NULL,
+  school_code VARCHAR(10)  NOT NULL,
+  school_name VARCHAR(100) NOT NULL,
+  school_kind VARCHAR(20)  NULL,
+  region      VARCHAR(20)  NULL,
+  address     VARCHAR(200) NULL,
+  CONSTRAINT uq_school_code UNIQUE (office_code, school_code)
 );
 
 -- =========================================================
 -- 회원 (member)
 -- =========================================================
+-- 비밀번호는 bcrypt 해시로만 저장, login_id는 UNIQUE(중복 가입 불가), role은 CHECK로 '학생'/'관리자'만
+-- school_id는 학교를 아직 안 골랐으면 NULL, 학교가 지워지면 NULL로 (ON DELETE SET NULL)
+-- notify_* 는 마이페이지 알림 설정(켜짐 1 / 꺼짐 0)
 CREATE TABLE IF NOT EXISTS member (
-  member_id       INT AUTO_INCREMENT PRIMARY KEY,    -- 회원 번호
-  login_id        VARCHAR(20)  NOT NULL,             -- 로그인 아이디
-  password_hash   VARCHAR(100) NOT NULL,             -- bcrypt 해시 (평문 저장 금지: 원래 비밀번호는 DB에 남지 않음)
-  name            VARCHAR(20)  NOT NULL,             -- 이름
-  role            VARCHAR(10)  NOT NULL DEFAULT '학생',  -- 역할 (지금은 모두 학생, 나중에 관리자 기능용으로 남겨둠)
-  school_id       INT          NULL,                 -- 내 학교 (아직 안 골랐으면 NULL)
-  notify_allergy  BOOLEAN      NOT NULL DEFAULT TRUE,  -- 내 알레르기 메뉴 알림
-  notify_tomorrow BOOLEAN      NOT NULL DEFAULT FALSE, -- 내일 식단 미리 보기
-  joined_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- 가입 시각 (값을 안 넣으면 지금 시각이 자동으로 들어감)
-  CONSTRAINT uq_member_login_id UNIQUE (login_id),                   -- 같은 아이디로 두 번 가입할 수 없음
-  CONSTRAINT ck_member_role CHECK (role IN ('학생', '관리자')),       -- 역할은 두 가지 값만 허용
-  CONSTRAINT fk_member_school FOREIGN KEY (school_id) REFERENCES school(school_id) ON DELETE SET NULL  -- 학교가 지워지면 회원의 학교만 NULL로 (회원은 남김)
+  member_id       INT AUTO_INCREMENT PRIMARY KEY,
+  login_id        VARCHAR(20)  NOT NULL,
+  password_hash   VARCHAR(100) NOT NULL,
+  name            VARCHAR(20)  NOT NULL,
+  role            VARCHAR(10)  NOT NULL DEFAULT '학생',
+  school_id       INT          NULL,
+  notify_allergy  BOOLEAN      NOT NULL DEFAULT TRUE,
+  notify_tomorrow BOOLEAN      NOT NULL DEFAULT FALSE,
+  joined_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_member_login_id UNIQUE (login_id),
+  CONSTRAINT ck_member_role CHECK (role IN ('학생', '관리자')),
+  CONSTRAINT fk_member_school FOREIGN KEY (school_id) REFERENCES school(school_id) ON DELETE SET NULL
 );
 
 -- =========================================================
 -- 알레르기 (allergy) : 급식 표기 기준 19종
 -- =========================================================
+-- mark_no = 급식표에 붙는 번호(1~19, CHECK), 번호와 이름 모두 UNIQUE
 CREATE TABLE IF NOT EXISTS allergy (
-  allergy_id   INT AUTO_INCREMENT PRIMARY KEY,   -- 알레르기 번호 (DB 내부용)
-  allergy_name VARCHAR(20) NOT NULL,             -- 알레르기 이름 (예: 우유)
-  mark_no      TINYINT     NOT NULL,                 -- 급식표에 붙는 번호
-  CONSTRAINT uq_allergy_name UNIQUE (allergy_name),                    -- 이름 중복 불가
-  CONSTRAINT uq_allergy_mark_no UNIQUE (mark_no),                      -- 번호 중복 불가
-  CONSTRAINT ck_allergy_mark_no CHECK (mark_no BETWEEN 1 AND 19)       -- 급식표 번호는 1~19만 허용
+  allergy_id   INT AUTO_INCREMENT PRIMARY KEY,
+  allergy_name VARCHAR(20) NOT NULL,
+  mark_no      TINYINT     NOT NULL,
+  CONSTRAINT uq_allergy_name UNIQUE (allergy_name),
+  CONSTRAINT uq_allergy_mark_no UNIQUE (mark_no),
+  CONSTRAINT ck_allergy_mark_no CHECK (mark_no BETWEEN 1 AND 19)
 );
 
 -- 알레르기 19종을 미리 넣어둠 (INSERT IGNORE: 이미 있으면 오류 없이 건너뜀)
@@ -68,90 +73,101 @@ INSERT IGNORE INTO allergy (mark_no, allergy_name) VALUES
 
 -- 회원_알레르기 (member_allergy) : 회원 N:M 알레르기
 -- 회원 한 명이 알레르기 여러 개를 가질 수 있고, 알레르기 하나도 여러 회원이 가질 수 있어서 연결 테이블로 풂
+-- PK가 (회원, 알레르기) 두 칸 → 같은 알레르기를 두 번 등록할 수 없음
+-- 회원 탈퇴하면 함께 삭제(CASCADE), 누가 쓰는 알레르기는 지울 수 없음(RESTRICT)
 CREATE TABLE IF NOT EXISTS member_allergy (
-  member_id  INT NOT NULL,                       -- 누가
-  allergy_id INT NOT NULL,                       -- 어떤 알레르기가 있는지
-  PRIMARY KEY (member_id, allergy_id),           -- 복합 기본키: 같은 회원이 같은 알레르기를 두 번 등록할 수 없음
-  CONSTRAINT fk_ma_member  FOREIGN KEY (member_id)  REFERENCES member(member_id)   ON DELETE CASCADE,   -- 회원이 탈퇴하면 그 회원의 알레르기도 함께 삭제
-  CONSTRAINT fk_ma_allergy FOREIGN KEY (allergy_id) REFERENCES allergy(allergy_id) ON DELETE RESTRICT   -- 누가 쓰고 있는 알레르기는 삭제 못 하게 막음
+  member_id  INT NOT NULL,
+  allergy_id INT NOT NULL,
+  PRIMARY KEY (member_id, allergy_id),
+  CONSTRAINT fk_ma_member  FOREIGN KEY (member_id)  REFERENCES member(member_id)   ON DELETE CASCADE,
+  CONSTRAINT fk_ma_allergy FOREIGN KEY (allergy_id) REFERENCES allergy(allergy_id) ON DELETE RESTRICT
 );
 
 -- =========================================================
 -- 메뉴 (menu) : 메뉴 이름만 한 번씩 저장 (같은 메뉴가 여러 날 나와도 1행)
 -- =========================================================
+-- menu_name UNIQUE → 같은 이름은 한 번만 저장
 CREATE TABLE IF NOT EXISTS menu (
-  menu_id   INT AUTO_INCREMENT PRIMARY KEY,      -- 메뉴 번호
-  menu_name VARCHAR(100) NOT NULL,               -- 메뉴 이름 (예: 제육볶음)
-  CONSTRAINT uq_menu_name UNIQUE (menu_name)     -- 같은 이름은 한 번만 저장
+  menu_id   INT AUTO_INCREMENT PRIMARY KEY,
+  menu_name VARCHAR(100) NOT NULL,
+  CONSTRAINT uq_menu_name UNIQUE (menu_name)
 );
 
 -- =========================================================
 -- 식단 (meal) : 어느 학교의 어느 날 한 끼
 -- 나이스는 영양 정보를 메뉴별이 아니라 "한 끼 전체" 기준으로 주므로 여기에 저장
 -- =========================================================
+-- (학교, 날짜, 끼니) UNIQUE → 같은 끼니가 두 번 저장되지 않음, 끼니는 CHECK로 조식/중식/석식만
+-- 영양값(열량·탄수화물·단백질·지방)은 0 이상만 허용, 학교가 지워지면 식단도 삭제(CASCADE)
 CREATE TABLE IF NOT EXISTS meal (
-  meal_id   INT AUTO_INCREMENT PRIMARY KEY,      -- 식단 번호
-  school_id INT          NOT NULL,               -- 어느 학교의 급식인지
-  meal_date DATE         NOT NULL,               -- 급식 날짜
-  meal_type VARCHAR(4)   NOT NULL,                   -- 조식 / 중식 / 석식
-  calories  DECIMAL(6,1) NULL,                       -- kcal
-  carbs     DECIMAL(6,1) NULL,                       -- 탄수화물 g
-  protein   DECIMAL(6,1) NULL,                       -- 단백질 g
-  fat       DECIMAL(6,1) NULL,                       -- 지방 g
-  CONSTRAINT uq_meal UNIQUE (school_id, meal_date, meal_type),          -- 같은 학교·같은 날·같은 끼니는 하나뿐
-  CONSTRAINT ck_meal_type CHECK (meal_type IN ('조식', '중식', '석식')),  -- 끼니는 세 가지만 허용
-  CONSTRAINT ck_meal_nutrition CHECK (calories >= 0 AND carbs >= 0 AND protein >= 0 AND fat >= 0),  -- 영양값은 음수 불가
-  CONSTRAINT fk_meal_school FOREIGN KEY (school_id) REFERENCES school(school_id) ON DELETE CASCADE   -- 학교가 지워지면 그 학교 식단도 삭제
+  meal_id   INT AUTO_INCREMENT PRIMARY KEY,
+  school_id INT          NOT NULL,
+  meal_date DATE         NOT NULL,
+  meal_type VARCHAR(4)   NOT NULL,
+  calories  DECIMAL(6,1) NULL,
+  carbs     DECIMAL(6,1) NULL,
+  protein   DECIMAL(6,1) NULL,
+  fat       DECIMAL(6,1) NULL,
+  CONSTRAINT uq_meal UNIQUE (school_id, meal_date, meal_type),
+  CONSTRAINT ck_meal_type CHECK (meal_type IN ('조식', '중식', '석식')),
+  CONSTRAINT ck_meal_nutrition CHECK (calories >= 0 AND carbs >= 0 AND protein >= 0 AND fat >= 0),
+  CONSTRAINT fk_meal_school FOREIGN KEY (school_id) REFERENCES school(school_id) ON DELETE CASCADE
 );
 
 -- 식단_메뉴 (meal_menu) : 식단 N:M 메뉴 (그날 그 끼니에 나온 메뉴)
 -- 한 끼에 메뉴가 여러 개, 한 메뉴도 여러 날 나오므로 연결 테이블로 풂
+-- PK (식단, 메뉴) → 한 끼에 같은 메뉴가 두 번 들어가지 않음. 식단이 지워지면 함께 삭제
 CREATE TABLE IF NOT EXISTS meal_menu (
-  meal_id    INT     NOT NULL,                   -- 어느 끼니에
-  menu_id    INT     NOT NULL,                   -- 어떤 메뉴가 나왔는지
-  sort_order TINYINT NOT NULL DEFAULT 0,             -- 급식표에 적힌 순서
-  PRIMARY KEY (meal_id, menu_id),                -- 한 끼에 같은 메뉴가 두 번 들어가지 않게
-  CONSTRAINT fk_mm_meal FOREIGN KEY (meal_id) REFERENCES meal(meal_id) ON DELETE CASCADE,    -- 식단이 지워지면 연결도 삭제
-  CONSTRAINT fk_mm_menu FOREIGN KEY (menu_id) REFERENCES menu(menu_id) ON DELETE RESTRICT    -- 식단에 쓰이는 메뉴는 삭제 불가
+  meal_id    INT     NOT NULL,
+  menu_id    INT     NOT NULL,
+  sort_order TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (meal_id, menu_id),
+  CONSTRAINT fk_mm_meal FOREIGN KEY (meal_id) REFERENCES meal(meal_id) ON DELETE CASCADE,
+  CONSTRAINT fk_mm_menu FOREIGN KEY (menu_id) REFERENCES menu(menu_id) ON DELETE RESTRICT
 );
 
 -- 식단_메뉴_알레르기 : 그날 나온 메뉴에 붙은 알레르기 번호
 -- (같은 이름의 메뉴라도 날마다 레시피가 달라 알레르기가 다를 수 있으므로 "그날 나온 메뉴" 기준)
+-- (meal_id, menu_id)를 묶어서 meal_menu를 가리키는 복합 외래키
 CREATE TABLE IF NOT EXISTS meal_menu_allergy (
-  meal_id    INT NOT NULL,                       -- 어느 끼니의
-  menu_id    INT NOT NULL,                       -- 어떤 메뉴에
-  allergy_id INT NOT NULL,                       -- 어떤 알레르기가 표시됐는지
-  PRIMARY KEY (meal_id, menu_id, allergy_id),    -- 같은 번호가 두 번 들어가지 않게
-  CONSTRAINT fk_mma_meal_menu FOREIGN KEY (meal_id, menu_id) REFERENCES meal_menu(meal_id, menu_id) ON DELETE CASCADE,  -- 복합 외래키: 실제로 그날 나온 메뉴에만 붙일 수 있음
+  meal_id    INT NOT NULL,
+  menu_id    INT NOT NULL,
+  allergy_id INT NOT NULL,
+  PRIMARY KEY (meal_id, menu_id, allergy_id),
+  CONSTRAINT fk_mma_meal_menu FOREIGN KEY (meal_id, menu_id) REFERENCES meal_menu(meal_id, menu_id) ON DELETE CASCADE,
   CONSTRAINT fk_mma_allergy   FOREIGN KEY (allergy_id) REFERENCES allergy(allergy_id) ON DELETE RESTRICT
 );
 
 -- =========================================================
 -- 평가 (review) : 그날 나온 메뉴에 대한 별점과 한 줄 평
 -- =========================================================
+-- (회원, 식단, 메뉴) UNIQUE → 같은 날 같은 메뉴는 한 번만 평가 (다시 쓰면 수정), 별점은 CHECK 1~5
+-- (meal_id, menu_id) 복합 외래키 → 실제로 나온 메뉴에만 평가 가능
+-- updated_at은 수정할 때마다 자동으로 지금 시각 (ON UPDATE CURRENT_TIMESTAMP)
 CREATE TABLE IF NOT EXISTS review (
-  review_id  INT AUTO_INCREMENT PRIMARY KEY,     -- 평가 번호
-  member_id  INT          NOT NULL,              -- 누가 썼는지
-  meal_id    INT          NOT NULL,              -- 어느 끼니의
-  menu_id    INT          NOT NULL,              -- 어떤 메뉴에 대한 평가인지
-  rating     TINYINT      NOT NULL,              -- 별점
-  comment    VARCHAR(100) NULL,                  -- 한 줄 평 (100자까지, 안 써도 됨)
-  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,                              -- 작성 시각
-  updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,  -- 수정 시각 (행이 바뀌면 자동 갱신)
-  CONSTRAINT uq_review_once UNIQUE (member_id, meal_id, menu_id),   -- 같은 날 같은 메뉴는 한 번만
-  CONSTRAINT ck_review_rating CHECK (rating BETWEEN 1 AND 5),       -- 별점은 1~5점만
-  CONSTRAINT fk_review_member    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE,                -- 회원 탈퇴 시 평가도 삭제
-  CONSTRAINT fk_review_meal_menu FOREIGN KEY (meal_id, menu_id) REFERENCES meal_menu(meal_id, menu_id) ON DELETE RESTRICT  -- 실제로 나온 메뉴에만 평가 가능, 평가가 있으면 그 메뉴 기록은 못 지움
+  review_id  INT AUTO_INCREMENT PRIMARY KEY,
+  member_id  INT          NOT NULL,
+  meal_id    INT          NOT NULL,
+  menu_id    INT          NOT NULL,
+  rating     TINYINT      NOT NULL,
+  comment    VARCHAR(100) NULL,
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT uq_review_once UNIQUE (member_id, meal_id, menu_id),
+  CONSTRAINT ck_review_rating CHECK (rating BETWEEN 1 AND 5),
+  CONSTRAINT fk_review_member    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE,
+  CONSTRAINT fk_review_meal_menu FOREIGN KEY (meal_id, menu_id) REFERENCES meal_menu(meal_id, menu_id) ON DELETE RESTRICT
 );
 
 -- =========================================================
 -- 공지사항 (notice)
 -- =========================================================
+-- 다른 테이블과 연결되지 않은 독립 테이블
 CREATE TABLE IF NOT EXISTS notice (
-  notice_id  INT AUTO_INCREMENT PRIMARY KEY,     -- 공지 번호
-  title      VARCHAR(100) NOT NULL,              -- 제목
-  body       TEXT         NOT NULL,              -- 내용 (긴 글이라 TEXT)
-  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP  -- 작성 시각
+  notice_id  INT AUTO_INCREMENT PRIMARY KEY,
+  title      VARCHAR(100) NOT NULL,
+  body       TEXT         NOT NULL,
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 처음 실행할 때만 공지 3개를 넣음 (WHERE NOT EXISTS: 공지가 하나라도 있으면 안 넣음)
@@ -174,11 +190,12 @@ WHERE NOT EXISTS (SELECT 1 FROM notice);
 -- =========================================================
 -- 식단 동기화 기록 (meal_sync) : 나이스를 너무 자주 부르지 않도록 언제 받아왔는지 기록
 -- =========================================================
+-- (학교, 시작일, 종료일)마다 마지막으로 받아온 시각(synced_at)을 기록 → 최근에 받았으면 나이스를 다시 부르지 않음
 CREATE TABLE IF NOT EXISTS meal_sync (
-  school_id INT      NOT NULL,                   -- 어느 학교의
-  from_date DATE     NOT NULL,                   -- 어느 기간(시작일)부터
-  to_date   DATE     NOT NULL,                   -- 어느 기간(종료일)까지를
-  synced_at DATETIME NOT NULL,                   -- 언제 나이스에서 받아왔는지
-  PRIMARY KEY (school_id, from_date, to_date),   -- 학교+기간마다 기록 하나
+  school_id INT      NOT NULL,
+  from_date DATE     NOT NULL,
+  to_date   DATE     NOT NULL,
+  synced_at DATETIME NOT NULL,
+  PRIMARY KEY (school_id, from_date, to_date),
   CONSTRAINT fk_sync_school FOREIGN KEY (school_id) REFERENCES school(school_id) ON DELETE CASCADE
 );

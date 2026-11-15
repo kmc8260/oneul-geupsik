@@ -8,7 +8,7 @@ const pool = require('../db');
 const { requireLoginApi, wrap } = require('../middleware');
 
 const router = express.Router();
-router.use(requireLoginApi); // 모두 로그인 필요
+router.use(requireLoginApi);
 
 // ---------- GET /api/me ----------
 // 마이페이지·사이드바·메인에서 쓰는 "내 정보 묶음"
@@ -49,13 +49,13 @@ router.get('/', wrap(async (req, res) => {
 
   res.json({
     member: { memberId: me.member_id, loginId: me.login_id, name: me.name, role: me.role, joinedAt: me.joined_at },
-    school: me.school_name                                   // 학교가 있으면 객체, 없으면 null
+    school: me.school_name
       ? { officeCode: me.office_code, schoolCode: me.school_code, name: me.school_name, kind: me.school_kind, region: me.region }
       : null,
     stats: {
       reviewCount: statRows[0].review_count,
       avgRating: statRows[0].avg_rating === null ? null : Number(statRows[0].avg_rating),
-      thisMonth: Number(statRows[0].this_month || 0),       // 평가가 하나도 없으면 SUM이 NULL이라 0으로
+      thisMonth: Number(statRows[0].this_month || 0),
     },
     allergies: allergyRows.map((a) => ({ markNo: a.mark_no, name: a.allergy_name })),
     settings: { notifyAllergy: Boolean(me.notify_allergy), notifyTomorrow: Boolean(me.notify_tomorrow) },
@@ -65,17 +65,17 @@ router.get('/', wrap(async (req, res) => {
 // ---------- PATCH /api/me/settings ---------- body: { notifyAllergy?, notifyTomorrow? }
 // 알림 설정 토글. 보낸 항목만 바꿈 (PATCH = 일부만 수정)
 router.patch('/settings', wrap(async (req, res) => {
-  const columns = { notifyAllergy: 'notify_allergy', notifyTomorrow: 'notify_tomorrow' }; // 화면 이름 → DB 컬럼 이름 (허용된 것만)
+  const columns = { notifyAllergy: 'notify_allergy', notifyTomorrow: 'notify_tomorrow' };
   const sets = [];
   const values = [];
   for (const [key, column] of Object.entries(columns)) {
-    if (typeof req.body[key] === 'boolean') {     // true/false로 온 값만 반영
+    if (typeof req.body[key] === 'boolean') {
       sets.push(`${column} = ?`);
       values.push(req.body[key]);
     }
   }
   if (!sets.length) return res.status(400).json({ message: '바꿀 설정이 없어요.' });
-  await pool.query(`UPDATE member SET ${sets.join(', ')} WHERE member_id = ?`, [...values, req.session.member.memberId]); // 컬럼 이름은 위 목록에서만 오므로 안전
+  await pool.query(`UPDATE member SET ${sets.join(', ')} WHERE member_id = ?`, [...values, req.session.member.memberId]);
   res.json({ ok: true });
 }));
 
@@ -85,7 +85,7 @@ router.patch('/profile', wrap(async (req, res) => {
   const name = String(req.body.name || '').trim();
   if (!name || name.length > 20) return res.status(400).json({ message: '이름을 1~20자로 입력해 주세요.' });
   await pool.query('UPDATE member SET name = ? WHERE member_id = ?', [name, req.session.member.memberId]);
-  req.session.member.name = name;                  // 세션에 있는 이름도 바꿈
+  req.session.member.name = name;
   res.json({ ok: true });
 }));
 
@@ -123,7 +123,7 @@ router.delete('/', wrap(async (req, res) => {
     return res.status(400).json({ message: '비밀번호가 맞지 않아요.' });
   }
   await pool.query('DELETE FROM member WHERE member_id = ?', [memberId]);
-  req.session.destroy(() => {                      // 로그인 상태도 끝냄
+  req.session.destroy(() => {
     res.clearCookie('sid');
     res.json({ ok: true });
   });

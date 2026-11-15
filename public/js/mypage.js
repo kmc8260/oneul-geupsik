@@ -4,11 +4,10 @@
 //  - 학교 변경(PUT /api/me/school), 알림 토글(PATCH /api/me/settings), 로그아웃(POST /api/auth/logout)
 //  - 데스크톱은 my-grid로 2열, 모바일은 1열 (CSS)
 // ===================================================================
-// 마이페이지
-const root = document.getElementById('mypage');   // 마이페이지 내용이 그려질 자리
+const root = document.getElementById('mypage');
 
 // key: 서버에 보낼 설정 이름, on: 지금 켜짐 여부, title/desc: 제목과 설명
-function toggleHtml(key, on, title, desc) {   // 알림 설정 한 줄 (켜기/끄기 스위치) HTML 만들기
+function toggleHtml(key, on, title, desc) {
   return `
     <div class="toggle-row">
       <div><strong>${title}</strong><span class="muted small">${desc}</span></div>
@@ -16,20 +15,19 @@ function toggleHtml(key, on, title, desc) {   // 알림 설정 한 줄 (켜기/�
     </div>`;
 }
 
-async function render() {   // 마이페이지 전체 그리기 (학교를 바꾸면 다시 부름)
+// 마이페이지 전체 그리기: /api/me 로 받은 정보로 왼쪽(프로필·학교·활동·알레르기), 오른쪽(알림·메뉴) 카드를 만듦
+async function render() {
   let me;
   try {
-    me = await api('/api/me');   // 서버에서 내 정보 묶음 받기 (routes/me.js)
+    me = await api('/api/me');
   } catch (err) {
-    if (!handleAuthError(err)) root.innerHTML = `<p class="muted pad">${esc(err.message)}</p>`;   // 실패하면 오류 문구
+    if (!handleAuthError(err)) root.innerHTML = `<p class="muted pad">${esc(err.message)}</p>`;
     return;
   }
-  const { member, school, stats, allergies, settings } = me;   // 받은 데이터를 이름별로 꺼냄 (구조 분해 할당)
+  const { member, school, stats, allergies, settings } = me;
 
   // 왼쪽 열: 프로필 카드 · 내 학교 카드 · 활동 요약 3칸 · 내 알레르기 카드
   // 오른쪽 열: 알림 설정 · 계정 메뉴(내가 쓴 평가, 공지사항, 회원정보 수정, 로그아웃)
-  // · member.joinedAt.slice(0, 7).replace('-', '년 ') : '2026-11-09' → '2026-11' → '2026년 11' (+ '월 가입')
-  // · /allergy?next=/mypage : 알레르기 저장 후 다시 마이페이지로 돌아오게 함
   root.innerHTML = `
     <div class="my-grid">
       <div class="my-col">
@@ -79,38 +77,41 @@ async function render() {   // 마이페이지 전체 그리기 (학교를 바�
       </div>
     </div>`;
 
-  document.getElementById('change-school').addEventListener('click', () =>   // 학교 변경 버튼 → 학교 검색 창 열기
-    openSchoolPicker(async (s) => {   // 학교를 고르면
+  // 학교 변경: 검색 창에서 고르면 저장하고 다시 그림
+  document.getElementById('change-school').addEventListener('click', () =>
+    openSchoolPicker(async (s) => {
       try {
-        await api('/api/me/school', { method: 'PUT', body: { officeCode: s.officeCode, schoolCode: s.schoolCode } });   // 내 학교로 저장 (routes/school.js)
+        await api('/api/me/school', { method: 'PUT', body: { officeCode: s.officeCode, schoolCode: s.schoolCode } });
         toast(`${s.name}(으)로 바꿨어요`);
-        document.getElementById('sidebar-school').textContent = s.name;   // 사이드바 학교 이름도 바로 바꿈
-        render();   // 마이페이지 다시 그리기
+        document.getElementById('sidebar-school').textContent = s.name;
+        render();
       } catch (err) {
         if (!handleAuthError(err)) toast(err.message, 3000);
       }
     })
   );
 
-  root.querySelectorAll('[data-setting]').forEach((sw) =>   // 알림 토글 스위치들
+  // 알림 토글: 화면을 먼저 바꾸고 서버에 저장, 실패하면 원래대로 되돌림
+  root.querySelectorAll('[data-setting]').forEach((sw) =>
     sw.addEventListener('click', async () => {
-      const next = sw.getAttribute('aria-checked') !== 'true';   // 지금 상태의 반대 (켜짐 → 꺼짐)
-      sw.setAttribute('aria-checked', String(next)); // 먼저 바꿔 보여주고   // 화면 먼저 바꾸고 (빠르게 반응하는 느낌)
+      const next = sw.getAttribute('aria-checked') !== 'true';
+      sw.setAttribute('aria-checked', String(next));
       try {
-        await api('/api/me/settings', { method: 'PATCH', body: { [sw.dataset.setting]: next } });   // 서버에 저장. [sw.dataset.setting] = 'notifyAllergy' 같은 이름을 키로 사용
+        await api('/api/me/settings', { method: 'PATCH', body: { [sw.dataset.setting]: next } });
       } catch (err) {
-        sw.setAttribute('aria-checked', String(!next)); // 실패하면 되돌림   // 저장 실패하면 화면도 원래대로
+        sw.setAttribute('aria-checked', String(!next));
         if (!handleAuthError(err)) toast(err.message, 3000);
       }
     })
   );
 
-  document.getElementById('logout').addEventListener('click', async () => {   // 로그아웃 버튼
-    const ok = await confirmDialog({ title: '로그아웃할까요?', confirmText: '로그아웃' });   // 확인 창
+  // 로그아웃: 확인 창 → 서버 세션 삭제 → 로그인 화면
+  document.getElementById('logout').addEventListener('click', async () => {
+    const ok = await confirmDialog({ title: '로그아웃할까요?', confirmText: '로그아웃' });
     if (!ok) return;
-    await api('/api/auth/logout', { method: 'POST' }).catch(() => {});   // 서버에 로그아웃 요청 (세션 삭제). 실패해도 그냥 넘어감
-    location.href = '/login';   // 로그인 화면으로
+    await api('/api/auth/logout', { method: 'POST' }).catch(() => {});
+    location.href = '/login';
   });
 }
 
-render();   // 화면이 열리면 바로 실행
+render();

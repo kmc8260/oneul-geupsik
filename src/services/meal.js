@@ -5,9 +5,9 @@
 const pool = require('../db');
 const neis = require('../neis');
 
-const RESYNC_HOURS = 3; // 오늘 이후가 포함된 기간은 3시간마다 다시 받아옴
+const RESYNC_HOURS = 3;
 
-const toYmd = (date) => date.replace(/-/g, ''); // "2026-11-02" → "20261102" (나이스가 쓰는 날짜 형식)
+const toYmd = (date) => date.replace(/-/g, '');
 // 오늘 날짜를 "YYYY-MM-DD" 문자열로 (padStart: 한 자리 수 앞에 0 붙이기)
 const todayStr = () => {
   const d = new Date();
@@ -20,25 +20,25 @@ async function needsSync(schoolId, from, to) {
     'SELECT synced_at FROM meal_sync WHERE school_id = ? AND from_date = ? AND to_date = ?',
     [schoolId, from, to]
   );
-  if (!rows.length) return true;                 // 한 번도 받아온 적 없으면 받아와야 함
-  const syncedAt = rows[0].synced_at;            // 마지막으로 받아온 시각
+  if (!rows.length) return true;
+  const syncedAt = rows[0].synced_at;
   // 기간이 다 지났고, 그 뒤에 받아온 적이 있으면 더는 바뀌지 않음
   const syncedDay = `${syncedAt.getFullYear()}-${String(syncedAt.getMonth() + 1).padStart(2, '0')}-${String(syncedAt.getDate()).padStart(2, '0')}`;
   if (to < todayStr() && syncedDay > to) return false;
-  return Date.now() - syncedAt.getTime() > RESYNC_HOURS * 3600 * 1000; // 마지막으로 받은 지 3시간 넘었으면 다시
+  return Date.now() - syncedAt.getTime() > RESYNC_HOURS * 3600 * 1000;
 }
 
 /** 나이스 → DB 저장 (한 기간을 하나의 트랜잭션으로) */
 async function syncMeals(school, from, to) {
-  const meals = await neis.getMeals(school.office_code, school.school_code, toYmd(from), toYmd(to)); // 나이스에서 기간 급식 받기
+  const meals = await neis.getMeals(school.office_code, school.school_code, toYmd(from), toYmd(to));
 
-  const conn = await pool.getConnection();       // 트랜잭션용 연결 하나 빌림
+  const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();               // 중간에 실패하면 전부 되돌리기 위해 트랜잭션 시작
+    await conn.beginTransaction();
     const [allergyRows] = await conn.query('SELECT allergy_id, mark_no FROM allergy');
-    const allergyByMark = new Map(allergyRows.map((a) => [a.mark_no, a.allergy_id])); // 급식표 번호 → allergy_id 빠르게 찾는 표
+    const allergyByMark = new Map(allergyRows.map((a) => [a.mark_no, a.allergy_id]));
 
-    for (const meal of meals) {                  // 받아온 끼니 하나씩
+    for (const meal of meals) {
       // 1) 식단 (있으면 영양 정보만 갱신)
       const [mealResult] = await conn.query(
         `INSERT INTO meal (school_id, meal_date, meal_type, calories, carbs, protein, fat)
@@ -47,18 +47,18 @@ async function syncMeals(school, from, to) {
            protein = VALUES(protein), fat = VALUES(fat), meal_id = LAST_INSERT_ID(meal_id)`,
         [school.school_id, meal.date, meal.type, meal.calories, meal.carbs, meal.protein, meal.fat]
       );
-      const mealId = mealResult.insertId;        // 새로 만들었거나 이미 있던 식단 번호
+      const mealId = mealResult.insertId;
 
-      const keepMenuIds = [];                    // 이번 급식표에 있는 메뉴 번호들 (빠진 메뉴를 찾기 위해)
-      for (const [i, dish] of meal.dishes.entries()) {  // i = 급식표 순서, dish = { name, marks }
+      const keepMenuIds = [];
+      for (const [i, dish] of meal.dishes.entries()) {
         // 2) 메뉴 (이름이 같으면 같은 메뉴)
         const [menuResult] = await conn.query(
           `INSERT INTO menu (menu_name) VALUES (?)
            ON DUPLICATE KEY UPDATE menu_id = LAST_INSERT_ID(menu_id)`,
-          [dish.name.slice(0, 100)]              // 컬럼 길이(100자)를 넘지 않게 자름
+          [dish.name.slice(0, 100)]
         );
         const menuId = menuResult.insertId;
-        if (keepMenuIds.includes(menuId)) continue; // 한 끼에 같은 메뉴가 두 번 적힌 경우
+        if (keepMenuIds.includes(menuId)) continue;
         keepMenuIds.push(menuId);
 
         // 3) 식단_메뉴
@@ -70,10 +70,10 @@ async function syncMeals(school, from, to) {
 
         // 4) 그날 메뉴의 알레르기 (새로 받은 값으로 교체)
         await conn.query('DELETE FROM meal_menu_allergy WHERE meal_id = ? AND menu_id = ?', [mealId, menuId]);
-        const allergyIds = dish.marks.map((n) => allergyByMark.get(n)).filter(Boolean); // 급식표 번호 → allergy_id
+        const allergyIds = dish.marks.map((n) => allergyByMark.get(n)).filter(Boolean);
         if (allergyIds.length) {
           await conn.query(
-            'INSERT INTO meal_menu_allergy (meal_id, menu_id, allergy_id) VALUES ?',   // 여러 줄 한 번에 넣기
+            'INSERT INTO meal_menu_allergy (meal_id, menu_id, allergy_id) VALUES ?',
             [allergyIds.map((aid) => [mealId, menuId, aid])]
           );
         }
@@ -96,12 +96,12 @@ async function syncMeals(school, from, to) {
        ON DUPLICATE KEY UPDATE synced_at = NOW()`,
       [school.school_id, from, to]
     );
-    await conn.commit();                         // 전부 성공 → 확정
+    await conn.commit();
   } catch (err) {
-    await conn.rollback();                       // 하나라도 실패 → 전부 되돌림
+    await conn.rollback();
     throw err;
   } finally {
-    conn.release();                              // 연결 반납
+    conn.release();
   }
 }
 
@@ -116,8 +116,8 @@ async function getMealsForRange(member, school, from, to) {
     try {
       await syncMeals(school, from, to);
     } catch (err) {
-      if (!err.expose) throw err;                // 나이스 오류가 아닌 진짜 오류는 위로 던짐
-      warning = err.message;                     // 나이스 오류면 저장된 데이터만 보여주고 안내 문구를 붙임
+      if (!err.expose) throw err;
+      warning = err.message;
     }
   }
 
@@ -150,8 +150,8 @@ async function getMealsForRange(member, school, from, to) {
   );
 
   // 메뉴별 평균 별점 (이 학교에서 이 메뉴에 남긴 모든 평가 기준)
-  const menuIds = [...new Set(rows.map((r) => r.menu_id))];   // 이번 기간에 나온 메뉴 번호들 (중복 제거)
-  const ratingByMenu = new Map();                             // 메뉴 번호 → { avg, count }
+  const menuIds = [...new Set(rows.map((r) => r.menu_id))];
+  const ratingByMenu = new Map();
   if (menuIds.length) {
     const [ratingRows] = await pool.query(
       `SELECT r.menu_id, ROUND(AVG(r.rating), 1) AS avg_rating, COUNT(*) AS review_count
@@ -176,19 +176,19 @@ async function getMealsForRange(member, school, from, to) {
   // 줄 단위 결과를 "끼니 → 메뉴 목록" 모양으로 묶기
   const mealsById = new Map();
   for (const r of rows) {
-    if (!mealsById.has(r.meal_id)) {             // 처음 보는 끼니면 새로 만듦
+    if (!mealsById.has(r.meal_id)) {
       mealsById.set(r.meal_id, {
         mealId: r.meal_id,
         date: r.meal_date,
         type: r.meal_type,
-        calories: r.calories === null ? null : Number(r.calories), // DECIMAL은 문자열로 오므로 숫자로 변환
+        calories: r.calories === null ? null : Number(r.calories),
         carbs: r.carbs === null ? null : Number(r.carbs),
         protein: r.protein === null ? null : Number(r.protein),
         fat: r.fat === null ? null : Number(r.fat),
         menus: [],
       });
     }
-    const rating = ratingByMenu.get(r.menu_id) || { avg: null, count: 0 }; // 평가가 없으면 평균 없음, 0개
+    const rating = ratingByMenu.get(r.menu_id) || { avg: null, count: 0 };
     mealsById.get(r.meal_id).menus.push({
       menuId: r.menu_id,
       name: r.menu_name,
@@ -198,10 +198,10 @@ async function getMealsForRange(member, school, from, to) {
     });
   }
 
-  const meals = [...mealsById.values()];         // Map → 배열
+  const meals = [...mealsById.values()];
 
   // 이번 기간 인기 메뉴 TOP 3 (평가가 있는 메뉴만)
-  const seen = new Set();                        // 같은 메뉴가 여러 날 나와도 한 번만 넣기 위해
+  const seen = new Set();
   const popular = [];
   for (const meal of meals) {
     for (const menu of meal.menus) {
@@ -210,9 +210,9 @@ async function getMealsForRange(member, school, from, to) {
       popular.push({ mealId: meal.mealId, menuId: menu.menuId, name: menu.name, date: meal.date, type: meal.type, avgRating: menu.avgRating, reviewCount: menu.reviewCount });
     }
   }
-  popular.sort((a, b) => b.avgRating - a.avgRating || b.reviewCount - a.reviewCount); // 평균 별점 높은 순, 같으면 평가 많은 순
+  popular.sort((a, b) => b.avgRating - a.avgRating || b.reviewCount - a.reviewCount);
 
-  return { meals, popular: popular.slice(0, 3), warning }; // 상위 3개만
+  return { meals, popular: popular.slice(0, 3), warning };
 }
 
 module.exports = { getMealsForRange, todayStr };

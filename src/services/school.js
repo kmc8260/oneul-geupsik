@@ -5,7 +5,7 @@
 const pool = require('../db');
 const neis = require('../neis');
 
-const CODE_RULE = /^[A-Z0-9]{2,10}$/; // 학교코드 형식: 영문 대문자·숫자 2~10자
+const CODE_RULE = /^[A-Z0-9]{2,10}$/;
 
 /**
  * 나이스에 실제로 있는 학교인지 확인하고 school 테이블에 넣은 뒤 school_id를 돌려줌
@@ -16,7 +16,7 @@ async function ensureSchool(officeCode, schoolCode, conn = pool) {
   if (!CODE_RULE.test(String(officeCode || '')) || !CODE_RULE.test(String(schoolCode || ''))) {
     const err = new Error('학교를 다시 선택해 주세요.');
     err.status = 400;
-    err.expose = true;   // 화면에 보여줘도 되는 오류
+    err.expose = true;
     throw err;
   }
   // 2) 나이스에 그 코드의 학교가 있는지 확인
@@ -39,7 +39,7 @@ async function ensureSchool(officeCode, schoolCode, conn = pool) {
        school_id = LAST_INSERT_ID(school_id)`,
     [school.officeCode, school.schoolCode, school.name, school.kind, school.region, school.address]
   );
-  return result.insertId; // 학교 번호 (school_id)
+  return result.insertId;
 }
 
 module.exports = { ensureSchool };
