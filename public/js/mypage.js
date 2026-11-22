@@ -43,6 +43,7 @@ async function render() {
             <span class="muted small">내 학교</span>
             <strong>${school ? esc(school.name) : '아직 선택하지 않았어요'}</strong>
             ${school ? `<span class="muted small">${esc([school.region, school.kind].filter(Boolean).join(' · '))}</span>` : ''}
+            ${school && school.address ? `<span class="muted small">${esc(school.address)}</span>` : ''}
           </div>
           <button class="btn btn-soft small-btn" type="button" id="change-school">${school ? '변경' : '선택'}</button>
         </section>

@@ -18,7 +18,7 @@ router.get('/', wrap(async (req, res) => {
   const [rows] = await pool.query(
     `SELECT m.member_id, m.login_id, m.name, m.role, m.notify_allergy, m.notify_tomorrow,
             DATE_FORMAT(m.joined_at, '%Y-%m-%d') AS joined_at,
-            s.office_code, s.school_code, s.school_name, s.school_kind, s.region
+            s.office_code, s.school_code, s.school_name, s.school_kind, s.region, s.address
        FROM member m
        LEFT JOIN school s ON s.school_id = m.school_id
       WHERE m.member_id = ?`,
@@ -50,7 +50,7 @@ router.get('/', wrap(async (req, res) => {
   res.json({
     member: { memberId: me.member_id, loginId: me.login_id, name: me.name, role: me.role, joinedAt: me.joined_at },
     school: me.school_name
-      ? { officeCode: me.office_code, schoolCode: me.school_code, name: me.school_name, kind: me.school_kind, region: me.region }
+      ? { officeCode: me.office_code, schoolCode: me.school_code, name: me.school_name, kind: me.school_kind, region: me.region, address: me.address }
       : null,
     stats: {
       reviewCount: statRows[0].review_count,

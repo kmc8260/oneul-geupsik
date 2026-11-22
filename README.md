@@ -14,11 +14,25 @@
 - MySQL 8.0 + MySQL Workbench
 - 나이스 API 인증키 (https://open.neis.go.kr 에서 발급)
 
-### 2. DB 만들기
-MySQL Workbench에서 서버에 접속한 뒤 `db/schema.sql`을 열어 번개 버튼으로 전체 실행합니다.
+### 2. DB 만들기 (+ 샘플 데이터)
+MySQL Workbench에서 서버에 접속한 뒤, 아래 파일을 **순서대로** 열어 번개(⚡) 버튼으로 전체 실행합니다.
 
-- 여러 번 실행해도 안전합니다. 1007, 1050 같은 노란 경고는 "이미 있어서 건너뜀"이라는 뜻이니 무시하세요.
-- **이전 버전(로그인·알레르기만 있던 버전)을 쓰고 있었다면** 회원 테이블 구조가 바뀌었으므로 `db/reset.sql`을 먼저 실행한 뒤 `db/schema.sql`을 실행하세요. reset.sql은 DB를 통째로 지우므로 테스트로 가입한 계정도 사라집니다.
+1. `db/reset.sql`: 기존 DB를 지우고 처음부터 (처음 설치라면 건너뛰어도 됨)
+2. `db/schema.sql`: 테이블 11개 생성 + 알레르기 19종·공지 3개
+3. `db/sample.sql`: 샘플 데이터 (학교 1, 회원 3, 메뉴 23, 지난주·이번 주 식단 10끼, 메뉴별 알레르기, 평가 9개)
+
+- 1007, 1050 같은 노란 경고는 "이미 있어서 건너뜀"이라는 뜻이니 무시하세요.
+- sample.sql은 실행한 날 기준으로 "지난주·이번 주" 날짜를 계산해서 넣기 때문에 언제 실행해도 메인 화면에 식단이 보입니다.
+
+**샘플 계정** (비밀번호는 모두 `mirim1234`)
+
+| 아이디 | 이름 | 등록한 알레르기 |
+| --- | --- | --- |
+| mirim01 | 김미림 | 우유, 밀 |
+| mirim02 | 이급식 | 난류, 새우 |
+| mirim03 | 박알레 | 없음 |
+
+**ERD**: `docs/ERD.png` (schema.sql 기준). Workbench에서 직접 그리려면 샘플까지 실행한 뒤 **Database → Reverse Engineer**에서 `oneul_geupsik`을 선택하면 됩니다.
 
 ### 3. 설정 파일 (.env)
 `.env.example`을 복사해 `.env`를 만들고 아래 두 줄을 채웁니다.
@@ -110,6 +124,8 @@ package.json             프로젝트 정보와 사용하는 라이브러리 목
 
 db/schema.sql            전체 테이블 11개 생성 SQL (여러 번 실행해도 안전)
 db/reset.sql             DB 통째로 지우기 (처음부터 다시 만들 때만)
+db/sample.sql            샘플 데이터 (schema.sql 다음에 실행, 샘플 계정 비밀번호 mirim1234)
+docs/ERD.png             ER 다이어그램
 
 src/server.js            서버 시작 · 세션(로그인 상태) · 화면 주소 · API 연결 · 오류 처리
 src/db.js                MySQL 연결 풀 (모든 SQL이 이걸 통해 실행됨)

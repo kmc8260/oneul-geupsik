@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS school (
 -- =========================================================
 -- 회원 (member)
 -- =========================================================
--- 비밀번호는 bcrypt 해시로만 저장, login_id는 UNIQUE(중복 가입 불가), role은 CHECK로 '학생'/'관리자'만
+-- 비밀번호는 bcrypt 해시로만 저장, login_id는 UNIQUE(중복 가입 불가), role은 CHECK로 '학생'만 허용 (마이페이지에 표시)
 -- school_id는 학교를 아직 안 골랐으면 NULL, 학교가 지워지면 NULL로 (ON DELETE SET NULL)
 -- notify_* 는 마이페이지 알림 설정(켜짐 1 / 꺼짐 0)
 CREATE TABLE IF NOT EXISTS member (
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS member (
   notify_tomorrow BOOLEAN      NOT NULL DEFAULT FALSE,
   joined_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT uq_member_login_id UNIQUE (login_id),
-  CONSTRAINT ck_member_role CHECK (role IN ('학생', '관리자')),
+  CONSTRAINT ck_member_role CHECK (role IN ('학생')),
   CONSTRAINT fk_member_school FOREIGN KEY (school_id) REFERENCES school(school_id) ON DELETE SET NULL
 );
 
