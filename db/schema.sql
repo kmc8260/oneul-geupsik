@@ -19,6 +19,7 @@ USE oneul_geupsik;
 -- 학교 (school) : 나이스에서 검색해 고른 학교만 저장
 -- =========================================================
 -- 교육청 코드 + 학교 코드는 나이스의 학교 식별값 → 둘을 묶어 UNIQUE (같은 학교 중복 저장 방지)
+--(school이라는 테이블을 만드는데, 이미 있으면 만들지 않고 건너뛰라는 의미)
 CREATE TABLE IF NOT EXISTS school (
   school_id   INT AUTO_INCREMENT PRIMARY KEY,
   office_code VARCHAR(10)  NOT NULL,
@@ -27,7 +28,9 @@ CREATE TABLE IF NOT EXISTS school (
   school_kind VARCHAR(20)  NULL,
   region      VARCHAR(20)  NULL,
   address     VARCHAR(200) NULL,
+  --school 테이블에 같은 학교가 두 번 저장되지 않게 막는 규칙(제약조건)
   CONSTRAINT uq_school_code UNIQUE (office_code, school_code)
+  
 );
 
 -- =========================================================
@@ -46,9 +49,13 @@ CREATE TABLE IF NOT EXISTS member (
   notify_allergy  BOOLEAN      NOT NULL DEFAULT TRUE,
   notify_tomorrow BOOLEAN      NOT NULL DEFAULT FALSE,
   joined_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  --같은 아이디로 여러 번 가입하지 못하게 막는 규칙(제약조건)
   CONSTRAINT uq_member_login_id UNIQUE (login_id),
+  --role은 '학생'만 허용하도록 막는 규칙(제약조건)
   CONSTRAINT ck_member_role CHECK (role IN ('학생')),
+  --학교가 지워지면 회원의 school_id를 Null로 바꾸도록 막는 규칙(제약조건)
   CONSTRAINT fk_member_school FOREIGN KEY (school_id) REFERENCES school(school_id) ON DELETE SET NULL
+  --
 );
 
 -- =========================================================
@@ -59,8 +66,11 @@ CREATE TABLE IF NOT EXISTS allergy (
   allergy_id   INT AUTO_INCREMENT PRIMARY KEY,
   allergy_name VARCHAR(20) NOT NULL,
   mark_no      TINYINT     NOT NULL,
+  --같은 이름의 알레르기와 같은 번호의 알레르기가 두 번 저장되지 않게 막는 규칙(제약조건)
   CONSTRAINT uq_allergy_name UNIQUE (allergy_name),
+  --같은 번호의 알레르기가 두 번 저장되지 않게 막는 규칙(제약조건)
   CONSTRAINT uq_allergy_mark_no UNIQUE (mark_no),
+  --알레르기 번호는 1~19만 허용하도록 막는 규칙(제약조건)
   CONSTRAINT ck_allergy_mark_no CHECK (mark_no BETWEEN 1 AND 19)
 );
 
@@ -79,7 +89,9 @@ CREATE TABLE IF NOT EXISTS member_allergy (
   member_id  INT NOT NULL,
   allergy_id INT NOT NULL,
   PRIMARY KEY (member_id, allergy_id),
+  --회원이 탈퇴하면 함께 삭제되도록 막는 규칙(제약조건)
   CONSTRAINT fk_ma_member  FOREIGN KEY (member_id)  REFERENCES member(member_id)   ON DELETE CASCADE,
+  -- 누가 쓰는 알레르기는 지울 수 없도록 막는 규칙(제약조건)
   CONSTRAINT fk_ma_allergy FOREIGN KEY (allergy_id) REFERENCES allergy(allergy_id) ON DELETE RESTRICT
 );
 
@@ -90,6 +102,7 @@ CREATE TABLE IF NOT EXISTS member_allergy (
 CREATE TABLE IF NOT EXISTS menu (
   menu_id   INT AUTO_INCREMENT PRIMARY KEY,
   menu_name VARCHAR(100) NOT NULL,
+  --같은 이름의 메뉴가 두 번 저장되지 않게 막는 규칙(제약조건)
   CONSTRAINT uq_menu_name UNIQUE (menu_name)
 );
 
@@ -108,9 +121,12 @@ CREATE TABLE IF NOT EXISTS meal (
   carbs     DECIMAL(6,1) NULL,
   protein   DECIMAL(6,1) NULL,
   fat       DECIMAL(6,1) NULL,
+  --같은 학교의 같은 날짜의 같은 끼니가 두 번 저장되지 않게 막는 규칙(제약조건)
   CONSTRAINT uq_meal UNIQUE (school_id, meal_date, meal_type),
+  --끼니는 조식/중식/석식만 허용하도록 막는 규칙(제약조건)
   CONSTRAINT ck_meal_type CHECK (meal_type IN ('조식', '중식', '석식')),
   CONSTRAINT ck_meal_nutrition CHECK (calories >= 0 AND carbs >= 0 AND protein >= 0 AND fat >= 0),
+  --학교가 지워지면 식단도 삭제되도록 막는 규칙(제약조건)
   CONSTRAINT fk_meal_school FOREIGN KEY (school_id) REFERENCES school(school_id) ON DELETE CASCADE
 );
 
@@ -122,7 +138,9 @@ CREATE TABLE IF NOT EXISTS meal_menu (
   menu_id    INT     NOT NULL,
   sort_order TINYINT NOT NULL DEFAULT 0,
   PRIMARY KEY (meal_id, menu_id),
+  --식단이 지워지면 함께 삭제되도록 막는 규칙(제약조건)
   CONSTRAINT fk_mm_meal FOREIGN KEY (meal_id) REFERENCES meal(meal_id) ON DELETE CASCADE,
+  --누가 쓰는 메뉴는 지울 수 없도록 막는 규칙(제약조건)
   CONSTRAINT fk_mm_menu FOREIGN KEY (menu_id) REFERENCES menu(menu_id) ON DELETE RESTRICT
 );
 
@@ -134,7 +152,9 @@ CREATE TABLE IF NOT EXISTS meal_menu_allergy (
   menu_id    INT NOT NULL,
   allergy_id INT NOT NULL,
   PRIMARY KEY (meal_id, menu_id, allergy_id),
+  --식단_메뉴가 지워지면 함께 삭제되도록 막는 규칙(제약조건)
   CONSTRAINT fk_mma_meal_menu FOREIGN KEY (meal_id, menu_id) REFERENCES meal_menu(meal_id, menu_id) ON DELETE CASCADE,
+  --누가 쓰는 알레르기는 지울 수 없도록 막는 규칙(제약조건)
   CONSTRAINT fk_mma_allergy   FOREIGN KEY (allergy_id) REFERENCES allergy(allergy_id) ON DELETE RESTRICT
 );
 
@@ -153,9 +173,13 @@ CREATE TABLE IF NOT EXISTS review (
   comment    VARCHAR(100) NULL,
   created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  --같은 날 같은 메뉴는 한 번만 평가하도록 막는 규칙(제약조건)
   CONSTRAINT uq_review_once UNIQUE (member_id, meal_id, menu_id),
+  --별점은 1~5만 허용하도록 막는 규칙(제약조건)
   CONSTRAINT ck_review_rating CHECK (rating BETWEEN 1 AND 5),
+  --회원이 탈퇴하면 평가도 함께 삭제되도록 막는 규칙(제약조건)
   CONSTRAINT fk_review_member    FOREIGN KEY (member_id) REFERENCES member(member_id) ON DELETE CASCADE,
+  --실제로 나온 메뉴에만 평가 가능하도록 막는 규칙(제약조건)
   CONSTRAINT fk_review_meal_menu FOREIGN KEY (meal_id, menu_id) REFERENCES meal_menu(meal_id, menu_id) ON DELETE RESTRICT
 );
 
@@ -197,5 +221,6 @@ CREATE TABLE IF NOT EXISTS meal_sync (
   to_date   DATE     NOT NULL,
   synced_at DATETIME NOT NULL,
   PRIMARY KEY (school_id, from_date, to_date),
+  --학교가 지워지면 동기화 기록도 함께 삭제되도록 막는 규칙(제약조건)
   CONSTRAINT fk_sync_school FOREIGN KEY (school_id) REFERENCES school(school_id) ON DELETE CASCADE
 );
