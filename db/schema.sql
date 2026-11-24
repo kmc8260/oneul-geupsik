@@ -19,7 +19,7 @@ USE oneul_geupsik;
 -- 학교 (school) : 나이스에서 검색해 고른 학교만 저장
 -- =========================================================
 -- 교육청 코드 + 학교 코드는 나이스의 학교 식별값 → 둘을 묶어 UNIQUE (같은 학교 중복 저장 방지)
---(school이라는 테이블을 만드는데, 이미 있으면 만들지 않고 건너뛰라는 의미)
+-- (school이라는 테이블을 만드는데, 이미 있으면 만들지 않고 건너뛰라는 의미)
 CREATE TABLE IF NOT EXISTS school (
   school_id   INT AUTO_INCREMENT PRIMARY KEY,
   office_code VARCHAR(10)  NOT NULL,
