@@ -67,7 +67,7 @@ async function syncMeals(school, from, to) {
            ON DUPLICATE KEY UPDATE sort_order = VALUES(sort_order)`,
           [mealId, menuId, i]
         );
-
+ ;[personalbar]
         // 4) 그날 메뉴의 알레르기 (새로 받은 값으로 교체)
         await conn.query('DELETE FROM meal_menu_allergy WHERE meal_id = ? AND menu_id = ?', [mealId, menuId]);
         const allergyIds = dish.marks.map((n) => allergyByMark.get(n)).filter(Boolean);
